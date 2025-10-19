@@ -11,7 +11,7 @@ import com.topjohnwu.magisk.databinding.ObservableRvItem
 import com.topjohnwu.magisk.databinding.set
 
 class PolicyRvItem(
-    private val viewModel: SuperuserViewModel,
+    private val viewModel: SuperuserViewModel2,
     override val item: SuPolicy,
     val packageName: String,
     private val isSharedUid: Boolean,

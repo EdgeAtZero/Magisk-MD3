@@ -1,54 +1,91 @@
 package com.topjohnwu.magisk.ui.theme
 
-import com.topjohnwu.magisk.R
-import com.topjohnwu.magisk.core.Config
+import android.os.Build
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 
-enum class Theme(
-    val themeName: String,
-    val themeRes: Int
+private val DarkColorScheme = darkColorScheme(
+    primary = PRIMARY,
+    secondary = PRIMARY_DARK,
+    tertiary = SECONDARY_DARK
+)
+
+private val LightColorScheme = lightColorScheme(
+    primary = PRIMARY,
+    secondary = PRIMARY_LIGHT,
+    tertiary = SECONDARY_LIGHT
+)
+
+fun Color.blend(other: Color, ratio: Float): Color {
+    val inverse = 1f - ratio
+    return Color(
+        red = red * inverse + other.red * ratio,
+        green = green * inverse + other.green * ratio,
+        blue = blue * inverse + other.blue * ratio,
+        alpha = alpha
+    )
+}
+
+@Composable
+fun MagiskTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    // Dynamic color is available on Android 12+
+    dynamicColor: Boolean = true,
+    content: @Composable () -> Unit
 ) {
-
-    Piplup(
-        themeName = "Piplup",
-        themeRes = R.style.ThemeFoundationMD2_Piplup
-    ),
-    PiplupAmoled(
-        themeName = "AMOLED",
-        themeRes = R.style.ThemeFoundationMD2_Amoled
-    ),
-    Rayquaza(
-        themeName = "Rayquaza",
-        themeRes = R.style.ThemeFoundationMD2_Rayquaza
-    ),
-    Zapdos(
-        themeName = "Zapdos",
-        themeRes = R.style.ThemeFoundationMD2_Zapdos
-    ),
-    Charmeleon(
-        themeName = "Charmeleon",
-        themeRes = R.style.ThemeFoundationMD2_Charmeleon
-    ),
-    Mew(
-        themeName = "Mew",
-        themeRes = R.style.ThemeFoundationMD2_Mew
-    ),
-    Salamence(
-        themeName = "Salamence",
-        themeRes = R.style.ThemeFoundationMD2_Salamence
-    ),
-    Fraxure(
-        themeName = "Fraxure (Legacy)",
-        themeRes = R.style.ThemeFoundationMD2_Fraxure
-    );
-
-    val isSelected get() = Config.themeOrdinal == ordinal
-
-    fun select() {
-        Config.themeOrdinal = ordinal
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+        darkTheme -> DarkColorScheme
+        else -> LightColorScheme
     }
 
-    companion object {
-        val selected get() = values().getOrNull(Config.themeOrdinal) ?: Piplup
-    }
+    SystemBarStyle(
+        darkMode = darkTheme
+    )
 
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+    )
+}
+
+@Composable
+private fun SystemBarStyle(
+    darkMode: Boolean,
+    statusBarScrim: Color = Color.Transparent,
+    navigationBarScrim: Color = Color.Transparent,
+) {
+    val context = LocalContext.current
+    val activity = context as ComponentActivity
+
+    SideEffect {
+        activity.enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(
+                statusBarScrim.toArgb(),
+                statusBarScrim.toArgb(),
+            ) { darkMode },
+            navigationBarStyle = when {
+                darkMode -> SystemBarStyle.dark(
+                    navigationBarScrim.toArgb()
+                )
+
+                else -> SystemBarStyle.light(
+                    navigationBarScrim.toArgb(),
+                    navigationBarScrim.toArgb(),
+                )
+            }
+        )
+    }
 }

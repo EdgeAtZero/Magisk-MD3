@@ -14,7 +14,7 @@ import com.topjohnwu.magisk.core.R as CoreR
 class SettingsFragment : BaseFragment<FragmentSettingsMd2Binding>() {
 
     override val layoutRes = R.layout.fragment_settings_md2
-    override val viewModel by viewModel<SettingsViewModel>()
+    override val viewModel by viewModel<SettingsViewModel2>()
     override val snackbarView: View get() = binding.snackbarContainer
 
     override fun onStart() {

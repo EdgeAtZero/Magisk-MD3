@@ -9,7 +9,7 @@ import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.ui.home.HomeViewModel
 import com.topjohnwu.magisk.ui.install.InstallViewModel
 import com.topjohnwu.magisk.ui.log.LogViewModel
-import com.topjohnwu.magisk.ui.superuser.SuperuserViewModel
+import com.topjohnwu.magisk.ui.superuser.SuperuserViewModel2
 import com.topjohnwu.magisk.ui.surequest.SuRequestViewModel
 
 interface ViewModelHolder : LifecycleOwner, ViewModelStoreOwner {
@@ -33,7 +33,7 @@ object VMFactory : ViewModelProvider.Factory {
         return when (modelClass) {
             HomeViewModel::class.java -> HomeViewModel(ServiceLocator.networkService)
             LogViewModel::class.java -> LogViewModel(ServiceLocator.logRepo)
-            SuperuserViewModel::class.java -> SuperuserViewModel(ServiceLocator.policyDB)
+            SuperuserViewModel2::class.java -> SuperuserViewModel2(ServiceLocator.policyDB)
             InstallViewModel::class.java ->
                 InstallViewModel(ServiceLocator.networkService, ServiceLocator.markwon)
             SuRequestViewModel::class.java ->

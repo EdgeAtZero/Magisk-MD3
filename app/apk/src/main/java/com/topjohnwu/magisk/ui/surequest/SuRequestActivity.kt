@@ -15,7 +15,7 @@ import com.topjohnwu.magisk.core.base.UntrackedActivity
 import com.topjohnwu.magisk.core.su.SuCallbackHandler
 import com.topjohnwu.magisk.core.su.SuCallbackHandler.REQUEST
 import com.topjohnwu.magisk.databinding.ActivityRequestBinding
-import com.topjohnwu.magisk.ui.theme.Theme
+import com.topjohnwu.magisk.ui.theme.Theme2
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,7 +33,7 @@ open class SuRequestActivity : UIActivity<ActivityRequestBinding>(), UntrackedAc
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             window.setHideOverlayWindows(true)
         }
-        setTheme(Theme.selected.themeRes)
+        setTheme(Theme2.selected.themeRes)
         super.onCreate(savedInstanceState)
 
         if (intent.action == Intent.ACTION_VIEW) {

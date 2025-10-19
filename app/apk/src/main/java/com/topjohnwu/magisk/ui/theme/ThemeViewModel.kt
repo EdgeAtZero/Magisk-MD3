@@ -14,7 +14,7 @@ class ThemeViewModel : BaseViewModel(), TappableHeadlineItem.Listener {
         is TappableHeadlineItem.ThemeMode -> DarkThemeDialog().show()
     }
 
-    fun saveTheme(theme: Theme) {
+    fun saveTheme(theme: Theme2) {
         if (!theme.isSelected) {
             Config.themeOrdinal = theme.ordinal
             RecreateEvent().publish()

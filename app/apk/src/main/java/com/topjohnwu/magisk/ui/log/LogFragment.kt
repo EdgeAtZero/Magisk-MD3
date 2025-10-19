@@ -12,7 +12,7 @@ import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.arch.BaseFragment
 import com.topjohnwu.magisk.arch.viewModel
 import com.topjohnwu.magisk.databinding.FragmentLogMd2Binding
-import com.topjohnwu.magisk.ui.MainActivity
+import com.topjohnwu.magisk.ui.MainActivity2
 import com.topjohnwu.magisk.utils.AccessibilityUtils
 import com.topjohnwu.magisk.utils.MotionRevealHelper
 import rikka.recyclerview.addEdgeSpacing
@@ -35,7 +35,7 @@ class LogFragment : BaseFragment<FragmentLogMd2Binding>(), MenuProvider {
         set(value) {
             MotionRevealHelper.withViews(binding.logFilter, binding.logFilterToggle, value)
             actionSave?.isVisible = !value
-            with(activity as MainActivity) {
+            with(activity as MainActivity2) {
                 invalidateToolbar()
                 requestNavigationHidden(value)
                 setDisplayHomeAsUpEnabled(value)

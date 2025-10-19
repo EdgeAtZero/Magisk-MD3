@@ -14,7 +14,7 @@ import com.topjohnwu.magisk.core.R as CoreR
 class SuperuserFragment : BaseFragment<FragmentSuperuserMd2Binding>() {
 
     override val layoutRes = R.layout.fragment_superuser_md2
-    override val viewModel by viewModel<SuperuserViewModel>()
+    override val viewModel by viewModel<SuperuserViewModel2>()
 
     override fun onStart() {
         super.onStart()

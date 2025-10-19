@@ -20,7 +20,7 @@ import com.topjohnwu.magisk.arch.viewModel
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.cmp
 import com.topjohnwu.magisk.databinding.FragmentFlashMd2Binding
-import com.topjohnwu.magisk.ui.MainActivity
+import com.topjohnwu.magisk.ui.MainActivity2
 import com.topjohnwu.magisk.core.R as CoreR
 
 class FlashFragment : BaseFragment<FragmentFlashMd2Binding>(), MenuProvider {
@@ -106,7 +106,7 @@ class FlashFragment : BaseFragment<FragmentFlashMd2Binding>(), MenuProvider {
         private fun createIntent(context: Context, args: FlashFragmentArgs) =
             NavDeepLinkBuilder(context)
                 .setGraph(R.navigation.main)
-                .setComponentName(MainActivity::class.java.cmp(context.packageName))
+                .setComponentName(MainActivity2::class.java.cmp(context.packageName))
                 .setDestination(R.id.flashFragment)
                 .setArguments(args.toBundle())
                 .createPendingIntent()

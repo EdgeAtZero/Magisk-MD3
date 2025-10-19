@@ -38,7 +38,7 @@ class ThemeFragment : BaseFragment<FragmentThemeMd2Binding>() {
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        for ((a, b) in Theme.values().paired()) {
+        for ((a, b) in Theme2.values().paired()) {
             val c = inflater.inflate(R.layout.item_theme_container, null, false)
             val left = c.findViewById<FrameLayout>(R.id.left)
             val right = c.findViewById<FrameLayout>(R.id.right)
