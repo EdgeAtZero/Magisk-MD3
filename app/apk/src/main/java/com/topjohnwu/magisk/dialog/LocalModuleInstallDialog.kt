@@ -5,11 +5,11 @@ import com.topjohnwu.magisk.MainDirections
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.R
 import com.topjohnwu.magisk.events.DialogBuilder
-import com.topjohnwu.magisk.ui.module.ModuleViewModel
+import com.topjohnwu.magisk.ui.module.ModuleViewModel2
 import com.topjohnwu.magisk.view.MagiskDialog
 
 class LocalModuleInstallDialog(
-    private val viewModel: ModuleViewModel,
+    private val viewModel: ModuleViewModel2,
     private val uri: Uri,
     private val displayName: String
 ) : DialogBuilder {

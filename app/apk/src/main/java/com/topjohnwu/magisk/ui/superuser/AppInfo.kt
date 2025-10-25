@@ -26,7 +26,7 @@ class AppInfo(
     val uid = applicationInfo.uid
 
     val packageInfo = packageManager.getPackageInfo(packageName, MATCH_UNINSTALLED_PACKAGES)!!
-    var suPolicy by mutableStateOf(suPolicy, neverEqualPolicy())
+    var suPolicy by mutableStateOf(suPolicy, referentialEqualityPolicy())
     val processes = SnapshotStateList<ProcessInfo>().apply { addAll(fetchProcesses(denyPolicy)) }
 
     val isSharedUID = packageInfo.sharedUserId != null

@@ -1,4 +1,4 @@
-package com.topjohnwu.magisk.ui.component
+package com.topjohnwu.magisk.ui.home
 
 import android.os.Build
 import android.system.Os
@@ -20,8 +20,7 @@ import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.ui.icon.Linux
 import com.topjohnwu.magisk.ui.icon.Magisk
 import com.topjohnwu.magisk.util.getSELinuxStatus
-import com.topjohnwu.magisk.util.getZygiskImplementation
-import com.topjohnwu.magisk.util.getZygiskVersion
+import com.topjohnwu.magisk.util.getZygiskInfo
 
 
 @Composable
@@ -32,8 +31,10 @@ fun InfoCard(modifier: Modifier = Modifier, autoExpand: Boolean = false) {
             expanded = true
         }
     }
-    ElevatedCard(
-        modifier = modifier
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.elevatedCardColors(),
+        shape = MaterialTheme.shapes.medium
     ) {
         Column(
             modifier = Modifier
@@ -43,15 +44,13 @@ fun InfoCard(modifier: Modifier = Modifier, autoExpand: Boolean = false) {
             InfoCardItem(
                 label = "管理器版本",
                 icon = Icons.Filled.Magisk,
-                content = "${BuildConfig.APP_VERSION_NAME} (${BuildConfig.APP_VERSION_CODE})" +
-                        if (BuildConfig.DEBUG) " (D)" else ""
+                content = "${BuildConfig.APP_VERSION_NAME} (${BuildConfig.APP_VERSION_CODE})" + if (BuildConfig.DEBUG) " (D)" else ""
             )
-            val zygiskImplementation = getZygiskImplementation()
-            if (zygiskImplementation.isNotBlank()) {
+            if (Info.isZygiskEnabled) {
                 Spacer(Modifier.height(16.dp))
                 InfoCardItem(
                     label = "Zygisk 状态",
-                    content = "已启用 | $zygiskImplementation | ${getZygiskVersion()}",
+                    content = "已启用" + getZygiskInfo()?.let { " | ${it.name} | ${it.version}" },
                     icon = Icons.Filled.Vaccines
                 )
             }
@@ -66,10 +65,7 @@ fun InfoCard(modifier: Modifier = Modifier, autoExpand: Boolean = false) {
                         onClick = { expanded = true },
                         modifier = Modifier.size(36.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowDown,
-                            contentDescription = "Show more"
-                        )
+                        Icon(imageVector = Icons.Filled.KeyboardArrowDown, contentDescription = null)
                     }
                 }
             }

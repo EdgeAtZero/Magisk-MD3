@@ -1,108 +1,104 @@
 package com.topjohnwu.magisk.ui.module
 
-import android.net.Uri
-import androidx.databinding.Bindable
-import androidx.lifecycle.MutableLiveData
-import com.topjohnwu.magisk.BR
-import com.topjohnwu.magisk.MainDirections
-import com.topjohnwu.magisk.R
-import com.topjohnwu.magisk.arch.AsyncLoadViewModel
+import android.app.Application
+import androidx.compose.runtime.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.topjohnwu.magisk.InternalApi
 import com.topjohnwu.magisk.core.Const
-import com.topjohnwu.magisk.core.Info
-import com.topjohnwu.magisk.core.base.ContentResultCallback
 import com.topjohnwu.magisk.core.model.module.LocalModule
-import com.topjohnwu.magisk.core.model.module.OnlineModule
-import com.topjohnwu.magisk.databinding.MergeObservableList
-import com.topjohnwu.magisk.databinding.RvItem
-import com.topjohnwu.magisk.databinding.bindExtra
-import com.topjohnwu.magisk.databinding.diffList
-import com.topjohnwu.magisk.databinding.set
-import com.topjohnwu.magisk.dialog.LocalModuleInstallDialog
-import com.topjohnwu.magisk.dialog.OnlineModuleInstallDialog
-import com.topjohnwu.magisk.events.GetContentEvent
-import com.topjohnwu.magisk.events.SnackbarEvent
+import com.topjohnwu.magisk.core.repository.NetworkService
+import com.topjohnwu.magisk.core.utils.RootUtils
+import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.parcelize.Parcelize
-import com.topjohnwu.magisk.core.R as CoreR
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.invoke
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 
-class ModuleViewModel : AsyncLoadViewModel() {
+class ModuleViewModel(app: Application) : AndroidViewModel(app), DIAware {
 
-    val bottomBarBarrierIds = intArrayOf(R.id.module_update, R.id.module_remove)
+    override val di by closestDI()
 
-    private val itemsInstalled = diffList<LocalModuleRvItem>()
+    private val svc: NetworkService by instance()
 
-    val items = MergeObservableList<RvItem>()
-    val extraBindings = bindExtra {
-        it.put(BR.viewModel, this)
+    var isRefreshing by mutableStateOf(false)
+        private set
+
+    var isLoading by mutableStateOf(false)
+        private set
+
+    private val mutex = Mutex()
+    private val _modules = mutableStateListOf<ModuleInfo>()
+
+    val modules by derivedStateOf {
+        _modules.sortedBy { it.name }
     }
 
-    val data get() = uri
+    val badge by derivedStateOf { _modules.size.toString().takeUnless { isLoading || isRefreshing } }
 
-    @get:Bindable
-    var loading = true
-        private set(value) = set(value, field, { field = it }, BR.loading)
-
-    override suspend fun doLoadWork() {
-        loading = true
-        val moduleLoaded = Info.env.isActive &&
-                withContext(Dispatchers.IO) { LocalModule.loaded() }
-        if (moduleLoaded) {
-            loadInstalled()
-            if (items.isEmpty()) {
-                items.insertItem(InstallModule)
-                    .insertList(itemsInstalled)
-            }
-        }
-        loading = false
-        loadUpdateInfo()
-    }
-
-    override fun onNetworkChanged(network: Boolean) = startLoading()
-
-    private suspend fun loadInstalled() {
-        withContext(Dispatchers.Default) {
-            val installed = LocalModule.installed().map { LocalModuleRvItem(it) }
-            itemsInstalled.update(installed)
-        }
-    }
-
-    private suspend fun loadUpdateInfo() {
-        withContext(Dispatchers.IO) {
-            itemsInstalled.forEach {
-                if (it.item.fetch())
-                    it.fetchedUpdateInfo()
+    init {
+        isLoading = true
+        viewModelScope.launch(Dispatchers.Default) {
+            mutex.withLock {
+                loadModules()
+                isLoading = false
+                _modules.forEach { it.fetchUpdateInfo() }
             }
         }
     }
 
-    fun downloadPressed(item: OnlineModule?) =
-        if (item != null && Info.isConnected.value == true) {
-            withExternalRW { OnlineModuleInstallDialog(item).show() }
-        } else {
-            SnackbarEvent(CoreR.string.no_connection).publish()
-        }
-
-    fun installPressed() = withExternalRW {
-        GetContentEvent("application/zip", UriCallback()).publish()
-    }
-
-    fun requestInstallLocalModule(uri: Uri, displayName: String) {
-        LocalModuleInstallDialog(this, uri, displayName).show()
-    }
-
-    @Parcelize
-    class UriCallback : ContentResultCallback {
-        override fun onActivityResult(result: Uri) {
-            uri.value = result
+    fun refresh() {
+        isRefreshing = true
+        viewModelScope.launch(Dispatchers.Default) {
+            mutex.withLock {
+                loadModules()
+                isRefreshing = false
+                _modules.forEach { it.fetchUpdateInfo() }
+            }
         }
     }
 
-    fun runAction(id: String, name: String) {
-        MainDirections.actionActionFragment(id, name).navigate()
+    @OptIn(InternalApi::class)
+    fun updateModule(module: ModuleInfo, enable: Boolean? = null, remove: Boolean? = null) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (enable != null) {
+                if (enable) {
+                    module.disableFile.delete()
+                } else {
+                    module.disableFile.createNewFile()
+                }
+                Shell.cmd("copy_preinit_files").submit()
+                Dispatchers.Main { module.isEnable = enable }
+            }
+            if (remove != null && !module.isUpdated) {
+                if (remove) {
+                    module.removeFile.createNewFile()
+                } else {
+                    module.removeFile.delete()
+                }
+                Shell.cmd("copy_preinit_files").submit()
+                Dispatchers.Main { module.isRemove = remove }
+            }
+        }
     }
 
-    companion object {
-        private val uri = MutableLiveData<Uri?>()
+    private suspend fun loadModules() {
+        if (LocalModule.loaded()) {
+            _modules.clear()
+            Dispatchers.IO {
+                RootUtils.fs.getFile(Const.MODULE_PATH)
+                    .listFiles()
+                    .orEmpty()
+                    .filter { !it.isFile && !it.isHidden }
+                    .map { ModuleInfo(path = it, svc = svc).apply { fetchModuleInfo() } }
+                    .let { Dispatchers.Main { _modules.addAll(it) } }
+            }
+        }
     }
+
 }

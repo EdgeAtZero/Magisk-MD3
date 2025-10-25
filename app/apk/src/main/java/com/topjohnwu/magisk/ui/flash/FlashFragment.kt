@@ -26,7 +26,7 @@ import com.topjohnwu.magisk.core.R as CoreR
 class FlashFragment : BaseFragment<FragmentFlashMd2Binding>(), MenuProvider {
 
     override val layoutRes = R.layout.fragment_flash_md2
-    override val viewModel by viewModel<FlashViewModel>()
+    override val viewModel by viewModel<FlashViewModel2>()
     override val snackbarView: View get() = binding.snackbarContainer
     override val snackbarAnchorView: View?
         get() = if (binding.restartBtn.isShown) binding.restartBtn else super.snackbarAnchorView
@@ -45,12 +45,12 @@ class FlashFragment : BaseFragment<FragmentFlashMd2Binding>(), MenuProvider {
         viewModel.state.observe(this) {
             activity?.supportActionBar?.setSubtitle(
                 when (it) {
-                    FlashViewModel.State.FLASHING -> CoreR.string.flashing
-                    FlashViewModel.State.SUCCESS -> CoreR.string.done
-                    FlashViewModel.State.FAILED -> CoreR.string.failure
+                    FlashViewModel2.State.FLASHING -> CoreR.string.flashing
+                    FlashViewModel2.State.SUCCESS -> CoreR.string.done
+                    FlashViewModel2.State.FAILED -> CoreR.string.failure
                 }
             )
-            if (it == FlashViewModel.State.SUCCESS && viewModel.showReboot) {
+            if (it == FlashViewModel2.State.SUCCESS && viewModel.showReboot) {
                 binding.restartBtn.apply {
                     if (!this.isVisible) this.show()
                     if (!this.isFocused) this.requestFocus()

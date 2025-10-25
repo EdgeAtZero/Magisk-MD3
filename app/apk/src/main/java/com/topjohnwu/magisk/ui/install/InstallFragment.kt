@@ -9,7 +9,7 @@ import com.topjohnwu.magisk.core.R as CoreR
 class InstallFragment : BaseFragment<FragmentInstallMd2Binding>() {
 
     override val layoutRes = R.layout.fragment_install_md2
-    override val viewModel by viewModel<InstallViewModel>()
+    override val viewModel by viewModel<InstallViewModel2>()
 
     override fun onStart() {
         super.onStart()

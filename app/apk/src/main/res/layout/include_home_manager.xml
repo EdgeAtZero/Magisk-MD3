@@ -5,11 +5,11 @@
 
     <data>
 
-        <import type="com.topjohnwu.magisk.ui.home.HomeViewModel.State" />
+        <import type="com.topjohnwu.magisk.ui.home.HomeViewModel2.State" />
 
         <variable
             name="viewModel"
-            type="com.topjohnwu.magisk.ui.home.HomeViewModel" />
+            type="com.topjohnwu.magisk.ui.home.HomeViewModel2" />
 
     </data>
 

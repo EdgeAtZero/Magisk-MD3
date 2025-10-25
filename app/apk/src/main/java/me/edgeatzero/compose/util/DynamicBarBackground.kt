@@ -16,7 +16,7 @@ private val LocalBarBackgroundColor = compositionLocalOf {
     mutableStateOf(Color.Unspecified)
 }
 
-val ColorScheme.dynamicBarBackgroundColor: Color
+val ColorScheme.dynamicBarColor: Color
     @Composable
     get() {
         val targetColor = LocalBarBackgroundColor.current.value
@@ -24,7 +24,7 @@ val ColorScheme.dynamicBarBackgroundColor: Color
     }
 
 @Composable
-fun Modifier.dynamicBarBackgroundColor(): Modifier {
+fun Modifier.dynamicBarColor(): Modifier {
     val targetColor = LocalBarBackgroundColor.current.value
     val appBarContainerColor by animateColorAsState(targetColor)
     return drawBehind {
@@ -37,7 +37,7 @@ fun Modifier.dynamicBarBackgroundColor(): Modifier {
 
 @ExperimentalMaterial3Api
 @Composable
-fun TopAppBarScrollBehavior.updateBarBackgroundColor(colors: TopAppBarColors): TopAppBarScrollBehavior {
+fun TopAppBarScrollBehavior.updateBarColor(colors: TopAppBarColors): TopAppBarScrollBehavior {
     val barBackgroundColor = LocalBarBackgroundColor.current
     val key1 = state.collapsedFraction
     DisposableEffect(key1) {

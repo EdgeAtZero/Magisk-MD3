@@ -23,7 +23,7 @@ import com.topjohnwu.magisk.arch.NavigationActivity
 class HomeFragment : BaseFragment<FragmentHomeMd2Binding>(), MenuProvider {
 
     override val layoutRes = R.layout.fragment_home_md2
-    override val viewModel by viewModel<HomeViewModel>()
+    override val viewModel by viewModel<HomeViewModel2>()
 
     override fun onStart() {
         super.onStart()
@@ -77,7 +77,7 @@ class HomeFragment : BaseFragment<FragmentHomeMd2Binding>(), MenuProvider {
                         it.contentResolver,
                     )
                 }
-            R.id.action_reboot -> activity?.let { RebootMenu.inflate(it).show() }
+            R.id.action_reboot -> activity?.let { RebootMenu2.inflate(it).show() }
             else -> return super.onOptionsItemSelected(item)
         }
         return true

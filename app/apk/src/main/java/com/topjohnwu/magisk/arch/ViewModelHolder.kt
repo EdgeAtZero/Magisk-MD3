@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.di.ServiceLocator
-import com.topjohnwu.magisk.ui.home.HomeViewModel
-import com.topjohnwu.magisk.ui.install.InstallViewModel
+import com.topjohnwu.magisk.ui.home.HomeViewModel2
+import com.topjohnwu.magisk.ui.install.InstallViewModel2
 import com.topjohnwu.magisk.ui.log.LogViewModel
 import com.topjohnwu.magisk.ui.superuser.SuperuserViewModel2
 import com.topjohnwu.magisk.ui.surequest.SuRequestViewModel
@@ -31,11 +31,11 @@ object VMFactory : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when (modelClass) {
-            HomeViewModel::class.java -> HomeViewModel(ServiceLocator.networkService)
+            HomeViewModel2::class.java -> HomeViewModel2(ServiceLocator.networkService)
             LogViewModel::class.java -> LogViewModel(ServiceLocator.logRepo)
             SuperuserViewModel2::class.java -> SuperuserViewModel2(ServiceLocator.policyDB)
-            InstallViewModel::class.java ->
-                InstallViewModel(ServiceLocator.networkService, ServiceLocator.markwon)
+            InstallViewModel2::class.java ->
+                InstallViewModel2(ServiceLocator.networkService, ServiceLocator.markwon)
             SuRequestViewModel::class.java ->
                 SuRequestViewModel(ServiceLocator.policyDB, ServiceLocator.timeoutPrefs)
             else -> modelClass.newInstance()

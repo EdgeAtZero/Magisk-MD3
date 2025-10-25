@@ -1,4 +1,4 @@
-package me.edgeatzero.compose.util
+package me.edgeatzero.android
 
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
@@ -12,9 +12,7 @@ import android.view.animation.DecelerateInterpolator
 import androidx.compose.ui.window.DialogWindowProvider
 import java.lang.reflect.Method
 
-/**
- * https://github.com/bmax121/APatch/blob/main/app/src/main/java/me/bmax/apatch/util/ui/APDialogBlurBehindUtils.kt
- */
+// copied from https://github.com/bmax121/APatch/blob/main/app/src/main/java/me/bmax/apatch/util/ui/APDialogBlurBehindUtils.kt
 
 private val bIsBlurSupport =
     getSystemProperty("ro.surface_flinger.supports_background_blur") && !getSystemProperty("persist.sys.sf.disable_blurs")

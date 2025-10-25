@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.topjohnwu.magisk.ui.settings.SettingsViewModel" />
+            type="com.topjohnwu.magisk.ui.settings.SettingsViewModel2" />
 
     </data>
 

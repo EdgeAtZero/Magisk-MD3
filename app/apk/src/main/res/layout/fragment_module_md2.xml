@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.topjohnwu.magisk.ui.module.ModuleViewModel" />
+            type="com.topjohnwu.magisk.ui.module.ModuleViewModel2" />
 
     </data>
 

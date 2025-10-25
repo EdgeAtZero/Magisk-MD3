@@ -10,12 +10,12 @@ import com.topjohnwu.magisk.core.ktx.reboot
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.tasks.MagiskInstaller
 import com.topjohnwu.magisk.events.DialogBuilder
-import com.topjohnwu.magisk.ui.home.HomeViewModel
+import com.topjohnwu.magisk.ui.home.HomeViewModel2
 import com.topjohnwu.magisk.view.MagiskDialog
 import com.topjohnwu.superuser.internal.UiThreadHandler
 import kotlinx.coroutines.launch
 
-class EnvFixDialog(private val vm: HomeViewModel, private val code: Int) : DialogBuilder {
+class EnvFixDialog(private val vm: HomeViewModel2, private val code: Int) : DialogBuilder {
 
     override fun build(dialog: MagiskDialog) {
         dialog.apply {

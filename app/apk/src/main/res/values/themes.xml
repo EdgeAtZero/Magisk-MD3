@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="SplashTheme.NoActionBar" parent="SplashTheme">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
     <style name="Base.V23.Theme.Foundation.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:windowBackground">?colorSurface</item>
         <item name="android:windowContentOverlay">@null</item>

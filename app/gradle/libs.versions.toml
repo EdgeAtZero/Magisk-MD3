@@ -1,18 +1,19 @@
 [versions]
-kotlin = "2.1.20"
-android = "8.9.2"
-ksp = "2.1.20-1.0.31"
+kotlin = "2.2.20"
+android = "8.12.3"
+ksp = "2.2.20-2.0.2"
 rikka = "1.3.0"
-navigation = "2.8.9"
+navigation = "2.9.5"
 libsu = "6.0.0"
 moshi = "1.15.2"
-okhttp = "4.12.0"
-retrofit = "2.11.0"
-room = "2.7.1"
+okhttp = "5.2.1"
+kodein = "7.28.0"
+retrofit = "3.0.0"
+room = "2.8.2"
 
 [libraries]
-bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version = "1.80" }
-commons-compress = { module = "org.apache.commons:commons-compress", version = "1.27.1" }
+bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version = "1.82" }
+commons-compress = { module = "org.apache.commons:commons-compress", version = "1.28.0" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofit" }
 retrofit-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "retrofit" }
@@ -26,12 +27,33 @@ timber = { module = "com.jakewharton.timber:timber", version = "5.0.1" }
 jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.1.0.202411261347-r" }
 
 # AndroidX
-activity = { module = "androidx.activity:activity", version = "1.10.1" }
-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
-core-ktx = { module = "androidx.core:core-ktx", version = "1.16.0" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.12.0-alpha09" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation-layout", version = "1.10.0-alpha05" }
+androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version = "1.7.8" }
+androidx-compose-material = { group = "androidx.compose.material", name = "material", version = "1.10.0-alpha05" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.5.0-alpha06" }
+androidx-compose-material3-adaptive-navigation = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation", version = "1.2.0-rc01" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version = "1.10.0-alpha05" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.10.0-alpha05" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version = "1.10.0-alpha05" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version = "1.10.0-alpha05" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.9.5" }
+
+#androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version = "2.9.2" }
+#androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version = "2.9.2" }
+androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version = "2.9.4" }
+
+androidx-webkit = { module = "androidx.webkit:webkit", version = "1.15.0-alpha03" }
+
+# KotlinX
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.9.0" }
+
+activity = { module = "androidx.activity:activity", version = "1.11.0" }
+appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.1" }
+core-ktx = { module = "androidx.core:core-ktx", version = "1.17.0" }
 core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.1" }
-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version = "1.8.6" }
+fragment-ktx = { module = "androidx.fragment:fragment-ktx", version = "1.8.9" }
 navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigation" }
 navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation" }
 profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version = "1.4.1" }
@@ -42,11 +64,11 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = "1.1.0" }
 transition = { module = "androidx.transition:transition", version = "1.6.0" }
 collection-ktx = { module = "androidx.collection:collection-ktx", version = "1.5.0" }
-material = { module = "com.google.android.material:material", version = "1.12.0" }
+material = { module = "com.google.android.material:material", version = "1.13.0" }
 jdk-libs = { module = "com.android.tools:desugar_jdk_libs_nio", version = "2.1.5" }
-test-runner = { module = "androidx.test:runner", version = "1.6.2" }
-test-rules = { module = "androidx.test:rules", version = "1.6.1" }
-test-junit = { module = "androidx.test.ext:junit", version = "1.2.1" }
+test-runner = { module = "androidx.test:runner", version = "1.7.0" }
+test-rules = { module = "androidx.test:rules", version = "1.7.0" }
+test-junit = { module = "androidx.test.ext:junit", version = "1.3.0" }
 test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version = "2.3.0" }
 
 # topjohnwu
@@ -54,6 +76,7 @@ indeterminate-checkbox = { module = "com.github.topjohnwu:indeterminate-checkbox
 libsu-core = { module = "com.github.topjohnwu.libsu:core", version.ref = "libsu" }
 libsu-service = { module = "com.github.topjohnwu.libsu:service", version.ref = "libsu" }
 libsu-nio = { module = "com.github.topjohnwu.libsu:nio", version.ref = "libsu" }
+libsu-io = { module = "com.github.topjohnwu.libsu:io", version.ref = "libsu" }
 
 # Rikka
 rikka-recyclerview = { module = "dev.rikka.rikkax.recyclerview:recyclerview-ktx", version = "1.3.2" }
@@ -66,4 +89,14 @@ ksp-plugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.
 navigation-safe-args-plugin = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigation" }
 lsparanoid-plugin = { module = "org.lsposed.lsparanoid:gradle-plugin", version = "0.6.0" }
 
+appiconloader = { module = "me.zhanghai.android.appiconloader:appiconloader", version = "1.5.0" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version = "3.3.0" }
+markdown-material3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version = "0.37.0" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version = "3.0.0" }
+
+kodein-compose = { module = "org.kodein.di:kodein-di-framework-compose", version.ref = "kodein" }
+kodein-viewmodel = { module = "org.kodein.di:kodein-di-framework-android-x-viewmodel", version.ref = "kodein" }
+kodein-savedstate = { module = "org.kodein.di:kodein-di-framework-android-x-viewmodel-savedstate", version.ref = "kodein" }
+
 [plugins]
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

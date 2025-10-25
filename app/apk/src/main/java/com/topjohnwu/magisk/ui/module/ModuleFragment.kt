@@ -16,7 +16,7 @@ import com.topjohnwu.magisk.core.R as CoreR
 class ModuleFragment : BaseFragment<FragmentModuleMd2Binding>() {
 
     override val layoutRes = R.layout.fragment_module_md2
-    override val viewModel by viewModel<ModuleViewModel>()
+    override val viewModel by viewModel<ModuleViewModel2>()
 
     override fun onStart() {
         super.onStart()

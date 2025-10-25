@@ -16,11 +16,7 @@ import com.topjohnwu.magisk.core.R
 import com.topjohnwu.magisk.core.data.magiskdb.PolicyDao
 import com.topjohnwu.magisk.core.ktx.getLabel
 import com.topjohnwu.magisk.core.model.su.SuPolicy
-import com.topjohnwu.magisk.databinding.MergeObservableList
-import com.topjohnwu.magisk.databinding.RvItem
-import com.topjohnwu.magisk.databinding.bindExtra
-import com.topjohnwu.magisk.databinding.diffList
-import com.topjohnwu.magisk.databinding.set
+import com.topjohnwu.magisk.databinding.*
 import com.topjohnwu.magisk.dialog.SuperuserRevokeDialog
 import com.topjohnwu.magisk.events.AuthEvent
 import com.topjohnwu.magisk.events.SnackbarEvent
@@ -29,7 +25,7 @@ import com.topjohnwu.magisk.view.TextItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
+import java.util.*
 
 class SuperuserViewModel2(
     private val db: PolicyDao
@@ -64,9 +60,11 @@ class SuperuserViewModel2(
             val policies = ArrayList<PolicyRvItem>()
             val pm = AppContext.packageManager
             for (policy in db.fetchAll()) {
-                val pkgs =
-                    if (policy.uid == Process.SYSTEM_UID) arrayOf("android")
-                    else pm.getPackagesForUid(policy.uid)
+                val pkgs = if (policy.uid == Process.SYSTEM_UID) {
+                    arrayOf("android")
+                } else {
+                    pm.getPackagesForUid(policy.uid)
+                }
                 if (pkgs == null) {
                     db.delete(policy.uid)
                     continue
@@ -91,10 +89,11 @@ class SuperuserViewModel2(
                 }
                 policies.addAll(map)
             }
-            policies.sortWith(compareBy(
-                { it.appName.lowercase(Locale.ROOT) },
-                { it.packageName }
-            ))
+            policies.sortWith(
+                compareBy(
+                    { it.appName.lowercase(Locale.ROOT) },
+                    { it.packageName }
+                ))
             itemsPolicies.update(policies)
         }
         if (itemsPolicies.isNotEmpty())

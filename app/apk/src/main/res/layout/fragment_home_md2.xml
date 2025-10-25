@@ -13,7 +13,7 @@
 
         <variable
             name="viewModel"
-            type="com.topjohnwu.magisk.ui.home.HomeViewModel" />
+            type="com.topjohnwu.magisk.ui.home.HomeViewModel2" />
 
     </data>
 

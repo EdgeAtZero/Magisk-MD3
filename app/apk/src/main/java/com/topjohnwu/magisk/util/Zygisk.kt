@@ -1,39 +1,28 @@
-package com.topjohnwu.magisk.ui.util
+package com.topjohnwu.magisk.util
 
 import com.topjohnwu.superuser.ShellUtils
+import kotlinx.serialization.Serializable
 
-fun getZygiskImplementation(): String {
-    val modulesPath = "/data/adb/modules"
-    val zygiskModuleIds = arrayOf(
-        "rezygisk",
-        "zygisksu"
-    )
-    return try {
-        zygiskModuleIds.firstNotNullOfOrNull { moduleName ->
+@Serializable
+data class ZygiskInfo(
+    val name: String,
+    val version: String
+)
+
+fun getZygiskInfo(): ZygiskInfo? =
+    runCatching {
+        val modulesPath = "/data/adb/modules"
+        val zygiskModuleIds = arrayOf("rezygisk", "zygisksu")
+        zygiskModuleIds.firstNotNullOfOrNull block@{ moduleName ->
             val modulePath = "$modulesPath/$moduleName"
             val isEnabled = ShellUtils.fastCmdResult("test -f $modulePath/module.prop && test ! -f $modulePath/disable")
-            if (!isEnabled) return@firstNotNullOfOrNull null
-            ShellUtils.fastCmd("grep '^name=' $modulePath/module.prop | cut -d'=' -f2").takeIf { it.isNotBlank() }
-        } ?: ""
-    } catch (_: Exception) {
-        ""
-    }
-}
-
-fun getZygiskVersion(): String {
-    val modulesPath = "/data/adb/modules"
-    val zygiskModuleIds = arrayOf(
-        "rezygisk",
-        "zygisksu"
-    )
-    return try {
-        zygiskModuleIds.firstNotNullOfOrNull { moduleName ->
-            val modulePath = "$modulesPath/$moduleName"
-            val isEnabled = ShellUtils.fastCmdResult("test -f $modulePath/module.prop && test ! -f $modulePath/disable")
-            if (!isEnabled) return@firstNotNullOfOrNull null
-            ShellUtils.fastCmd("grep '^version=' $modulePath/module.prop | cut -d'=' -f2").takeIf { it.isNotBlank() }
-        } ?: "None"
-    } catch (_: Exception) {
-        "None"
-    }
-}
+            isEnabled || return@block null
+            ZygiskInfo(
+                name = ShellUtils.fastCmd("grep '^name=' $modulePath/module.prop | cut -d'=' -f2")
+                    .takeIf { it.isNotBlank() } ?: return@block null,
+                version = ShellUtils.fastCmd("grep '^version=' $modulePath/module.prop | cut -d'=' -f2 | cut -d'(' -f1")
+                    .trim()
+                    .takeIf { it.isNotBlank() } ?: return@block null
+            )
+        }
+    }.getOrNull()

@@ -1,122 +1,89 @@
 package com.topjohnwu.magisk.ui.flash
 
-import android.view.MenuItem
-import androidx.databinding.Bindable
-import androidx.databinding.ObservableArrayList
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
+import android.app.Application
+import android.net.Uri
+import androidx.compose.runtime.*
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.topjohnwu.magisk.BR
-import com.topjohnwu.magisk.R
-import com.topjohnwu.magisk.arch.BaseViewModel
-import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
-import com.topjohnwu.magisk.core.ktx.reboot
 import com.topjohnwu.magisk.core.ktx.synchronized
-import com.topjohnwu.magisk.core.ktx.timeFormatStandard
-import com.topjohnwu.magisk.core.ktx.toTime
 import com.topjohnwu.magisk.core.tasks.FlashZip
 import com.topjohnwu.magisk.core.tasks.MagiskInstaller
-import com.topjohnwu.magisk.core.utils.MediaStoreUtils
-import com.topjohnwu.magisk.core.utils.MediaStoreUtils.outputStream
-import com.topjohnwu.magisk.databinding.set
-import com.topjohnwu.magisk.events.SnackbarEvent
+import com.topjohnwu.magisk.ui.install.InstallMethod
 import com.topjohnwu.superuser.CallbackList
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.invoke
 import kotlinx.coroutines.launch
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
 
-class FlashViewModel : BaseViewModel() {
+class FlashViewModel(private val action: FlashAction, app: Application) : AndroidViewModel(app), DIAware {
 
-    enum class State {
-        FLASHING, SUCCESS, FAILED
-    }
+    override val di by closestDI()
 
-    private val _state = MutableLiveData(State.FLASHING)
-    val state: LiveData<State> get() = _state
-    val flashing = state.map { it == State.FLASHING }
+    var log = mutableStateListOf<String>()
 
-    @get:Bindable
-    var showReboot = Info.isRooted
-        set(value) = set(value, field, { field = it }, BR.showReboot)
+    val isConnected = MutableStateFlow(false)
 
-    val items = ObservableArrayList<ConsoleItem>()
-    lateinit var args: FlashFragmentArgs
+    var isFlashing by mutableStateOf(false)
+        private set
 
-    private val logItems = mutableListOf<String>().synchronized()
-    private val outItems = object : CallbackList<String>() {
+    var isSuccess by mutableStateOf<Boolean?>(null)
+        private set
+
+    val isRebootAvailable by derivedStateOf { isShouldReboot && !isFlashing && isSuccess == true }
+
+    private val logs = mutableListOf<String>().synchronized()
+    private val console = object : CallbackList<String>() {
         override fun onAddElement(e: String?) {
             e ?: return
-            items.add(ConsoleItem(e))
-            logItems.add(e)
+            logs.add(e)
+            log.add(e)
         }
     }
 
-    fun startFlashing() {
-        val (action, uri) = args
+    private var isShouldReboot by mutableStateOf(true)
 
-        viewModelScope.launch {
-            val result = when (action) {
-                Const.Value.FLASH_ZIP -> {
-                    uri ?: return@launch
-                    FlashZip(uri, outItems, logItems).exec()
-                }
-                Const.Value.UNINSTALL -> {
-                    showReboot = false
-                    MagiskInstaller.Uninstall(outItems, logItems).exec()
-                }
-                Const.Value.FLASH_MAGISK -> {
-                    if (Info.isEmulator)
-                        MagiskInstaller.Emulator(outItems, logItems).exec()
-                    else
-                        MagiskInstaller.Direct(outItems, logItems).exec()
-                }
-                Const.Value.FLASH_INACTIVE_SLOT -> {
-                    showReboot = false
-                    MagiskInstaller.SecondSlot(outItems, logItems).exec()
-                }
-                Const.Value.PATCH_FILE -> {
-                    uri ?: return@launch
-                    showReboot = false
-                    MagiskInstaller.Patch(uri, outItems, logItems).exec()
-                }
-                else -> {
-                    back()
-                    return@launch
-                }
+    init {
+        viewModelScope.launch(Dispatchers.Default) {
+            isConnected.takeWhile { it }.collect()
+            isFlashing = true
+            isSuccess = flash()
+            isFlashing = false
+        }
+    }
+
+    private suspend fun flash(): Boolean = when (action) {
+        is FlashAction.Install -> when (action.method) {
+            InstallMethod.Patch -> {
+                isShouldReboot = false
+                val uri = action.patchFile?.let { Uri.parse(it) } ?: error("Patch file uri is null")
+                Dispatchers.IO { MagiskInstaller.Patch(uri, console, logs).exec() }
             }
-            onResult(result)
-        }
-    }
 
-    private fun onResult(success: Boolean) {
-        _state.value = if (success) State.SUCCESS else State.FAILED
-    }
-
-    fun onMenuItemClicked(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_save -> savePressed()
-        }
-        return true
-    }
-
-    private fun savePressed() = withExternalRW {
-        viewModelScope.launch(Dispatchers.IO) {
-            val name = "magisk_install_log_%s.log".format(
-                System.currentTimeMillis().toTime(timeFormatStandard)
-            )
-            val file = MediaStoreUtils.getFile(name)
-            file.uri.outputStream().bufferedWriter().use { writer ->
-                synchronized(logItems) {
-                    logItems.forEach {
-                        writer.write(it)
-                        writer.newLine()
-                    }
-                }
+            InstallMethod.Direct -> if (Info.isEmulator) {
+                Dispatchers.IO { MagiskInstaller.Emulator(console, logs).exec() }
+            } else {
+                Dispatchers.IO { MagiskInstaller.Direct(console, logs).exec() }
             }
-            SnackbarEvent(file.toString()).publish()
+
+            InstallMethod.InactiveSlot -> {
+                isShouldReboot = false
+                Dispatchers.IO { MagiskInstaller.SecondSlot(console, logs).exec() }
+            }
+        }
+
+        is FlashAction.Module -> {
+            Dispatchers.IO { FlashZip(Uri.parse(action.file), console, logs).exec() }
+        }
+
+        FlashAction.Uninstall -> {
+            isShouldReboot = false
+            Dispatchers.IO { MagiskInstaller.Uninstall(console, logs).exec() }
         }
     }
 
-    fun restartPressed() = reboot()
 }

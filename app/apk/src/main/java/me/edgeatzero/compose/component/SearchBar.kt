@@ -17,6 +17,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import me.edgeatzero.compose.util.onBackPressed
 
 @Composable
 fun SearchBar(
@@ -35,14 +36,9 @@ fun SearchBar(
         isFocusRequested = true
     }
 
-    BackHandler(onRequestBack != null) {
-        onValueChange("")
-        onRequestBack?.invoke()
-    }
+    BackHandler(onRequestBack != null) { onValueChange(""); onRequestBack?.invoke() }
 
-    BackHandler(onRequestBack == null && isFocusRequested) {
-        focusRequester.freeFocus()
-    }
+    BackHandler(onRequestBack == null && isFocusRequested) { focusRequester.freeFocus() }
 
     Surface(
         modifier = modifier
@@ -58,11 +54,8 @@ fun SearchBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (onRequestBack != null) {
-                IconButton(onClick = { onValueChange(""); onRequestBack.invoke() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null
-                    )
+                IconButton(onClick = onBackPressed) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                 }
             }
             TextField(
@@ -70,24 +63,20 @@ fun SearchBar(
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
                 value = value,
+                placeholder = { Text("搜索") },
+                trailingIcon = {
+                    IconButton(onClick = { onValueChange("") }) {
+                        Icon(imageVector = Icons.Filled.Close, contentDescription = null)
+                    }
+                },
+                shape = RoundedCornerShape(6.dp),
+                maxLines = 1,
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
-                shape = RoundedCornerShape(6.dp),
-                maxLines = 1,
-                trailingIcon = {
-                    IconButton(
-                        onClick = { onValueChange("") }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = null
-                        )
-                    }
-                },
                 onValueChange = onValueChange
             )
         }

@@ -1,15 +1,21 @@
 package com.topjohnwu.magisk.ui.settings
 
+import android.app.Application
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.kodein.di.DI
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
 
 data class SampleData(
     val id: Int,
@@ -25,23 +31,18 @@ class SampleCon(
     var isOk: Boolean
 )
 
-class SettingsViewModel : ViewModel() {
+class SettingsViewModel(app: Application) : AndroidViewModel(app), DIAware {
 
-    val data = SnapshotStateList<SampleData>(10) { SampleData(it, "INDEX: $it") }
+    override val di by closestDI()
+
+    val data = mutableStateListOf<String>()
 
     init {
         viewModelScope.launch {
+            data.addAll(listOf("A", "B", "C"))
             delay(3000)
-            val con = SampleCon(isOk = true)
-            data[2].con = con
-            println("HIDE")
-            delay(3000)
-            con.isOk = false
-            data[2].con = con
-            println("SHOW")
-            delay(3000)
-            data[2].con = SampleCon(isOk = true)
-            println("SHOW NOW")
+            println("GO")
+            data.add("A")
         }
     }
 
