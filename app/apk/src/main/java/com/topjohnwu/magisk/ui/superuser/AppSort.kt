@@ -2,59 +2,30 @@ package com.topjohnwu.magisk.ui.superuser
 
 import com.topjohnwu.magisk.ui.superuser.AppSort.*
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KProperty1
-
-typealias AppSortData = Pair<AppSort<*>, Order>
 
 @Serializable
-sealed class AppSort<T : Comparable<T>>() {
+sealed class AppSort() {
 
-    protected abstract val kProperty0: KProperty1<AppInfo, T>
-
-    fun equals(info0: AppInfo, info1: AppInfo): Boolean =
-        kProperty0.get(info0) == kProperty0.get(info1)
-
-    fun compare(info0: AppInfo, info1: AppInfo): Int =
-        kProperty0.get(info0).compareTo(kProperty0.get(info1))
-
-    open val isNeedOrder: Boolean = true
+    abstract fun compare(p0: AppInfo, p1: AppInfo): Int
 
     @Serializable
-    object AppName : AppSort<String>() {
-        override val kProperty0 = AppInfo::label
+    object Name : AppSort() {
+        override fun compare(p0: AppInfo, p1: AppInfo): Int =
+            p0.label.compareTo(p1.label)
     }
 
     @Serializable
-    object PackageName : AppSort<String>() {
-        override val kProperty0 = AppInfo::packageName
+    object Package : AppSort() {
+        override fun compare(p0: AppInfo, p1: AppInfo): Int =
+            p0.packageName.compareTo(p1.packageName)
     }
 
     @Serializable
-    object UID : AppSort<Int>() {
-        override val kProperty0 = AppInfo::uid
-    }
-
-    @Serializable
-    object WhetherDeny : AppSort<Boolean>() {
-        override val kProperty0 = AppInfo::isDeny
-        override val isNeedOrder = false
-    }
-
-    @Serializable
-    object WhetherSU : AppSort<Boolean>() {
-        override val kProperty0 = AppInfo::isSuperUserActive
-        override val isNeedOrder = false
-    }
-
-    @Serializable
-    enum class Order {
-
-        ASC, DESC;
-
-        operator fun not() = if (this == ASC) DESC else ASC
-
+    object UID : AppSort() {
+        override fun compare(p0: AppInfo, p1: AppInfo): Int =
+            p0.uid.compareTo(p1.uid)
     }
 
 }
 
-val AppSorts = arrayOf(WhetherSU, WhetherDeny, AppName, PackageName, UID)
+val AppSorts = listOf(Name, Package, UID)

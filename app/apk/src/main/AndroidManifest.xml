@@ -2,9 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools">
 
-    <application android:name=".MagiskApp" android:localeConfig="@xml/locale_config" tools:replace="android:name">
+    <application android:name=".MagiskApp"
+                 android:localeConfig="@xml/locale_config"
+                 tools:ignore="MissingApplicationIcon"
+                 tools:replace="android:name"
+                 tools:targetApi="33">
         <activity
                 android:name=".ui.MainActivity"
+                android:launchMode="standard"
                 android:exported="true"
                 android:theme="@style/SplashTheme.NoActionBar">
             <intent-filter>
@@ -14,6 +19,12 @@
             <intent-filter>
                 <action android:name="android.intent.action.APPLICATION_PREFERENCES"/>
                 <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="magisk" android:host="main"/>
             </intent-filter>
         </activity>
 
@@ -26,10 +37,6 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.APPLICATION_PREFERENCES"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
         </activity>
 
         <activity
@@ -37,6 +44,7 @@
                 android:directBootAware="true"
                 android:exported="false"
                 android:taskAffinity=""
+                android:theme="@style/Foundation.Floating"
                 tools:ignore="AppLinkUrlError">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
@@ -47,8 +55,7 @@
         <activity
                 android:name=".ui.web.WebActivity"
                 android:autoRemoveFromRecents="true"
-                android:theme="@style/SplashTheme.NoActionBar"
-                android:documentLaunchMode="intoExisting"
+                android:theme="@style/Foundation.Default"
                 android:exported="true"/>
 
     </application>

@@ -13,14 +13,13 @@ import com.topjohnwu.magisk.ui.install.InstallMethod
 import com.topjohnwu.superuser.CallbackList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.invoke
 import kotlinx.coroutines.launch
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 
-class FlashViewModel(private val action: FlashAction, app: Application) : AndroidViewModel(app), DIAware {
+class FlashViewModel(private val params: FlashParams, app: Application) : AndroidViewModel(app), DIAware {
 
     override val di by closestDI()
 
@@ -49,18 +48,18 @@ class FlashViewModel(private val action: FlashAction, app: Application) : Androi
 
     init {
         viewModelScope.launch(Dispatchers.Default) {
-            isConnected.takeWhile { it }.collect()
+            isConnected.first { it }
             isFlashing = true
             isSuccess = flash()
             isFlashing = false
         }
     }
 
-    private suspend fun flash(): Boolean = when (action) {
-        is FlashAction.Install -> when (action.method) {
+    private suspend fun flash(): Boolean = when (params) {
+        is FlashParams.Install -> when (params.method) {
             InstallMethod.Patch -> {
                 isShouldReboot = false
-                val uri = action.patchFile?.let { Uri.parse(it) } ?: error("Patch file uri is null")
+                val uri = params.patchFile?.let { Uri.parse(it) } ?: error("Patch file uri is null")
                 Dispatchers.IO { MagiskInstaller.Patch(uri, console, logs).exec() }
             }
 
@@ -76,11 +75,11 @@ class FlashViewModel(private val action: FlashAction, app: Application) : Androi
             }
         }
 
-        is FlashAction.Module -> {
-            Dispatchers.IO { FlashZip(Uri.parse(action.file), console, logs).exec() }
+        is FlashParams.Module -> {
+            Dispatchers.IO { FlashZip(Uri.parse(params.file), console, logs).exec() }
         }
 
-        FlashAction.Uninstall -> {
+        FlashParams.Uninstall -> {
             isShouldReboot = false
             Dispatchers.IO { MagiskInstaller.Uninstall(console, logs).exec() }
         }

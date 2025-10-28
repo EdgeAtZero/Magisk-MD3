@@ -12,8 +12,7 @@ import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.invoke
 import kotlinx.coroutines.launch
 import org.kodein.di.DIAware
@@ -48,7 +47,7 @@ class ActionViewModel(val id: String, val name: String, app: Application) : Andr
 
     init {
         viewModelScope.launch(Dispatchers.Default) {
-            isConnected.takeWhile { it }.collect()
+            isConnected.first { it }
             isExecuting = true
             isSuccess = execute()
             isExecuting = false

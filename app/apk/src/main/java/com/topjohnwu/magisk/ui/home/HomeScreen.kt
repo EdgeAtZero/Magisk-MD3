@@ -28,7 +28,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     rootContentPadding: PaddingValues,
     viewModel: HomeViewModel,
-    onNavigateToInstall: () -> Unit
+    onNavigateToInstall: () -> Unit,
+    onNavigateToUninstall: () -> Unit
 ) {
     if (viewModel.envCheckCode != 0) {
         var isConfirmed by rememberSaveable { mutableStateOf(false) }

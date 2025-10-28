@@ -28,9 +28,6 @@ fun TopBars.Switchable(
             switchedBar()
         } else {
             LargeTopAppBar(
-                modifier = Modifier
-                    .dynamicBarColor()
-                    .statusBarsPadding(),
                 title = title,
                 navigationIcon = navigationIcon,
                 actions = actions,

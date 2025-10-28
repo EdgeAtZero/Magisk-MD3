@@ -31,6 +31,7 @@ android {
 
     buildTypes {
         release {
+            proguardFiles("proguard-rules.pro")
             isMinifyEnabled = true
             isShrinkResources = true
         }
@@ -39,6 +40,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
     coreLibraryDesugaring(libs.jdk.libs)
 
@@ -87,4 +89,5 @@ dependencies {
 
     // Make sure kapt runs with a proper kotlin-stdlib
     kapt(kotlin("stdlib"))
+    kapt(kotlin("reflect"))
 }

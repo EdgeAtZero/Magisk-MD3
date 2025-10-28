@@ -3,9 +3,11 @@ package com.topjohnwu.magisk.ui.superuser
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
@@ -37,10 +39,17 @@ fun SuperUserScreen(
     viewModel: SuperUserViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var isSearchBarExpanded by rememberSaveable { mutableStateOf(false) }
     val navigator = rememberListDetailPaneScaffoldNavigator<String>(calculatePaneScaffoldDirective())
     val paneExpansionState = rememberPaneExpansionState(navigator.scaffoldValue, ANCHORS, ANCHORS.lastIndex)
     val contentKey by remember { derivedStateOf { navigator.currentDestination?.contentKey } }
+    var isAdvancedMenuSheetVisible by rememberSaveable { mutableStateOf(false) }
+    var isSearchBarShouldVisible by rememberSaveable { mutableStateOf(false) }
+
+    if (isAdvancedMenuSheetVisible) {
+        SuperUserAdvancedMenuBottomSheet(viewModel = viewModel) {
+            isAdvancedMenuSheetVisible = false
+        }
+    }
 
     Scaffolds.ListDetail(
         modifier = modifier,
@@ -49,12 +58,22 @@ fun SuperUserScreen(
         paneAnchors = ANCHORS,
         paneExpansionState = paneExpansionState,
         topBar = TopBars.Switchable(
-            isSwitched = isSearchBarExpanded,
+            isSwitched = contentKey == null && isSearchBarShouldVisible,
             title = { Text(text = if (contentKey != null) "应用信息" else "超级用户") },
             actions = {
-                AnimatedVisibility(visible = contentKey == null) {
-                    IconButton(onClick = { isSearchBarExpanded = true }) {
-                        Icon(imageVector = Icons.Filled.Search, contentDescription = null)
+                AnimatedVisibility(
+                    visible = contentKey == null,
+                    enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
+                    exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start)
+                ) {
+                    Row {
+                        IconButton(onClick = { isSearchBarShouldVisible = true }) {
+                            Icon(imageVector = Icons.Filled.Search, contentDescription = null)
+                        }
+                        IconButton(
+                            onClick = { isAdvancedMenuSheetVisible = true },
+                            content = { Icon(imageVector = Icons.Filled.FilterList, contentDescription = null) }
+                        )
                     }
                 }
             },
@@ -73,14 +92,14 @@ fun SuperUserScreen(
                 SearchBar(
                     value = viewModel.searchText,
                     onValueChange = { viewModel.searchText = it },
-                    onRequestBack = { isSearchBarExpanded = false },
+                    onRequestBack = { isSearchBarShouldVisible = false },
                     containerColor = Color.Transparent
                 )
             }
         ),
         listPane = { contentPadding ->
             AnimatedPane {
-                SuperUserListPane(
+                SuperUserList(
                     contentPadding = contentPadding,
                     viewModel = viewModel,
                     currentPkg = contentKey
@@ -96,7 +115,7 @@ fun SuperUserScreen(
             AnimatedPane {
                 Crossfade(targetState = viewModel.apps.find { contentKey == it.packageName }) { targetState ->
                     if (targetState != null) {
-                        SuperUserDetailPane(
+                        SuperUserDetail(
                             contentPadding = contentPadding,
                             item = targetState
                         )

@@ -29,6 +29,7 @@ object SuCallbackHandler {
             Timber.d(action)
             data.let { bundle ->
                 bundle.keySet().forEach {
+                    @Suppress("DEPRECATION")
                     Timber.d("[%s]=[%s]", it, bundle[it])
                 }
             }
@@ -42,6 +43,7 @@ object SuCallbackHandler {
 
     // https://android.googlesource.com/platform/frameworks/base/+/547bf5487d52b93c9fe183aa6d56459c170b17a4
     private fun Bundle.getIntComp(key: String, defaultValue: Int): Int {
+        @Suppress("DEPRECATION")
         val value = get(key) ?: return defaultValue
         return when (value) {
             is Int -> value

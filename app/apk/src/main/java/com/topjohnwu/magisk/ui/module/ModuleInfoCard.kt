@@ -1,5 +1,6 @@
 package com.topjohnwu.magisk.ui.module
 
+import android.text.format.Formatter
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -8,9 +9,11 @@ import androidx.compose.material.icons.automirrored.outlined.Wysiwyg
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -23,12 +26,15 @@ fun ModuleInfoCard(
     modifier: Modifier = Modifier,
     item: ModuleInfo,
     onAction: () -> Unit,
-    onWeb: () -> Unit,
-    onUpdate: (enable: Boolean?, remove: Boolean?) -> Unit
+    onUpdate: (enable: Boolean?, remove: Boolean?) -> Unit,
+    onUpdateRequest: () -> Unit,
+    onWeb: () -> Unit
 ) {
+    val context = LocalContext.current
+
     Card(
         modifier = modifier,
-        enabled = item.isEnable && !item.isRemove,
+        enabled = item.isEnable && !item.isRemove && item.notice == null,
         colors = CardDefaults.elevatedCardColors().let { it.copy(disabledContainerColor = it.containerColor) },
         shape = MaterialTheme.shapes.medium,
         onClick = { onUpdate(false, null) }
@@ -52,18 +58,25 @@ fun ModuleInfoCard(
                 }
             }
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                val textDecoration = TextDecoration.LineThrough.takeIf { !item.isEnable || item.isRemove }
+                val textDecoration = TextDecoration.LineThrough.takeIf { item.isRemove }
 
                 Row(horizontalArrangement = Arrangement.SpaceAround) {
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            TextLabel(text = item.size)
+                            val sizeText = remember(context, item.size) { Formatter.formatFileSize(context, item.size) }
+                            TextLabel(text = sizeText)
+                            if (item.isActionable) {
+                                TextLabel(text = "可执行")
+                            }
+                            if (item.isWeb) {
+                                TextLabel(text = "WEB")
+                            }
                             AnimatedVisibility(
                                 visible = item.isOutdated != null,
                                 enter = fadeIn() + expandHorizontally(expandFrom = Alignment.End),
                                 exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.End)
                             ) {
-                                TextLabel(text = if (item.isOutdated == true) "可更新" else "最新")
+                                TextLabel(text = if (item.isOutdated == true) "可更新" else "已最新")
                             }
                         }
                         Crossfade(targetState = textDecoration) { targetState ->
@@ -107,26 +120,35 @@ fun ModuleInfoCard(
                         textDecoration = targetState
                     )
                 }
+                item.notice?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
                 Row(horizontalArrangement = Arrangement.SpaceAround) {
-                    Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        AnimatedVisibility(visible = item.isActionable) {
-                            FilledTonalButton(onClick = onAction) {
-                                Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null)
+                    Row(modifier = Modifier.weight(1f)) {
+                        if (item.notice == null) {
+                            AnimatedVisibility(visible = item.isActionable) {
+                                FilledTonalIconButton(onClick = onAction) {
+                                    Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null)
+                                }
                             }
-                        }
-                        AnimatedVisibility(visible = item.isWeb) {
-                            FilledTonalButton(onClick = onWeb) {
-                                Icon(imageVector = Icons.AutoMirrored.Outlined.Wysiwyg, contentDescription = null)
+                            AnimatedVisibility(visible = item.isWeb) {
+                                FilledTonalIconButton(onClick = onWeb) {
+                                    Icon(imageVector = Icons.AutoMirrored.Outlined.Wysiwyg, contentDescription = null)
+                                }
                             }
                         }
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row {
                         AnimatedVisibility(
                             visible = item.isOutdated == true,
                             enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
                             exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start)
                         ) {
-                            FilledTonalButton(onClick = {}) {
+                            FilledTonalIconButton(onClick = onUpdateRequest) {
                                 Icon(imageVector = Icons.Filled.Download, contentDescription = null)
                             }
                         }
@@ -143,8 +165,10 @@ fun ModuleInfoCard(
                             ) {
                                 if (targetState) {
                                     Icon(imageVector = Icons.Filled.Restore, contentDescription = null)
+                                    Text(text = "恢复")
                                 } else {
                                     Icon(imageVector = Icons.Filled.Delete, contentDescription = null)
+                                    Text(text = "删除")
                                 }
                             }
                         }

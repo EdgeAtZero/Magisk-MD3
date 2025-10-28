@@ -11,8 +11,8 @@ import com.topjohnwu.magisk.core.repository.NetworkService
 import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.invoke
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -35,19 +35,33 @@ class ModuleViewModel(app: Application) : AndroidViewModel(app), DIAware {
     private val mutex = Mutex()
     private val _modules = mutableStateListOf<ModuleInfo>()
 
+    var priorities by mutableStateOf<List<ModulePriority>>(listOf(ModulePriority.Update))
+    var searchText by mutableStateOf("")
+    var sort by mutableStateOf<ModuleSort>(ModuleSort.Name)
     val modules by derivedStateOf {
-        _modules.sortedBy { it.name }
+        _modules
+            .filter {
+                it.id.contains(searchText, true) || it.name.contains(searchText, true)
+            }
+            .sortedWith { p0, p1 ->
+                priorities
+                    .fold(0) { acc, priority ->
+                        if (acc != 0) return@sortedWith acc
+                        priority.compare(p0, p1)
+                    }
+                    .takeIf { it != 0 }
+                    ?: sort.compare(p0, p1)
+            }
+            .also { badge = it.size }
     }
-
-    val badge by derivedStateOf { _modules.size.toString().takeUnless { isLoading || isRefreshing } }
 
     init {
         isLoading = true
+        if (!viewModelScope.isActive) error("broken!")
         viewModelScope.launch(Dispatchers.Default) {
             mutex.withLock {
                 loadModules()
                 isLoading = false
-                _modules.forEach { it.fetchUpdateInfo() }
             }
         }
     }
@@ -55,10 +69,10 @@ class ModuleViewModel(app: Application) : AndroidViewModel(app), DIAware {
     fun refresh() {
         isRefreshing = true
         viewModelScope.launch(Dispatchers.Default) {
+            if (mutex.isLocked) error("mutex is locked!")
             mutex.withLock {
                 loadModules()
                 isRefreshing = false
-                _modules.forEach { it.fetchUpdateInfo() }
             }
         }
     }
@@ -73,7 +87,7 @@ class ModuleViewModel(app: Application) : AndroidViewModel(app), DIAware {
                     module.disableFile.createNewFile()
                 }
                 Shell.cmd("copy_preinit_files").submit()
-                Dispatchers.Main { module.isEnable = enable }
+                module.isEnable = enable
             }
             if (remove != null && !module.isUpdated) {
                 if (remove) {
@@ -82,7 +96,7 @@ class ModuleViewModel(app: Application) : AndroidViewModel(app), DIAware {
                     module.removeFile.delete()
                 }
                 Shell.cmd("copy_preinit_files").submit()
-                Dispatchers.Main { module.isRemove = remove }
+                module.isRemove = remove
             }
         }
     }
@@ -95,10 +109,22 @@ class ModuleViewModel(app: Application) : AndroidViewModel(app), DIAware {
                     .listFiles()
                     .orEmpty()
                     .filter { !it.isFile && !it.isHidden }
-                    .map { ModuleInfo(path = it, svc = svc).apply { fetchModuleInfo() } }
-                    .let { Dispatchers.Main { _modules.addAll(it) } }
+                    .map {
+                        ModuleInfo(path = it, svc = svc).apply {
+                            fetchModuleInfo()
+                            viewModelScope.launch(Dispatchers.Default) { fetchUpdateInfo() }
+                        }
+                    }
+                    .let { _modules.addAll(it) }
             }
         }
+    }
+
+    companion object {
+
+        var badge by mutableStateOf(-1)
+            private set
+
     }
 
 }

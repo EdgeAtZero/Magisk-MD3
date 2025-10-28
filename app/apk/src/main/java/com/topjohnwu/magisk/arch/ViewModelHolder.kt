@@ -10,7 +10,7 @@ import com.topjohnwu.magisk.ui.home.HomeViewModel2
 import com.topjohnwu.magisk.ui.install.InstallViewModel2
 import com.topjohnwu.magisk.ui.log.LogViewModel
 import com.topjohnwu.magisk.ui.superuser.SuperuserViewModel2
-import com.topjohnwu.magisk.ui.surequest.SuRequestViewModel
+import com.topjohnwu.magisk.ui.surequest.SuRequestViewModel2
 
 interface ViewModelHolder : LifecycleOwner, ViewModelStoreOwner {
 
@@ -36,8 +36,8 @@ object VMFactory : ViewModelProvider.Factory {
             SuperuserViewModel2::class.java -> SuperuserViewModel2(ServiceLocator.policyDB)
             InstallViewModel2::class.java ->
                 InstallViewModel2(ServiceLocator.networkService, ServiceLocator.markwon)
-            SuRequestViewModel::class.java ->
-                SuRequestViewModel(ServiceLocator.policyDB, ServiceLocator.timeoutPrefs)
+            SuRequestViewModel2::class.java ->
+                SuRequestViewModel2(ServiceLocator.policyDB, ServiceLocator.timeoutPrefs)
             else -> modelClass.newInstance()
         } as T
     }

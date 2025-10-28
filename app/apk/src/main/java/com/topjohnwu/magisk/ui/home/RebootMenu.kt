@@ -1,5 +1,8 @@
 package com.topjohnwu.magisk.ui.home
 
+import android.app.Activity
+import android.os.Build
+import android.os.PowerManager
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RestartAlt
@@ -7,6 +10,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.getSystemService
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.ktx.reboot
@@ -14,6 +19,7 @@ import com.topjohnwu.magisk.core.ktx.reboot
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RebootMenu(modifier: Modifier = Modifier) {
+    val activity = LocalContext.current as Activity
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var isSafeMode by rememberSaveable { mutableStateOf(Config.bootloop >= 2) }
 
@@ -46,9 +52,12 @@ fun RebootMenu(modifier: Modifier = Modifier) {
                 text = { Text(text = "重启") },
                 onClick = { reboot() }
             )
+            @Suppress("DEPRECATION")
             DropdownMenuItem(
                 text = { Text(text = "软重启") },
-                onClick = { reboot("userspace") }
+                onClick = { reboot("userspace") },
+                enabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                        && activity.getSystemService<PowerManager>()?.isRebootingUserspaceSupported == true
             )
             DropdownMenuItem(
                 text = { Text(text = "重启到 Recovery") },

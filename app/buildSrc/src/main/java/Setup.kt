@@ -77,7 +77,7 @@ fun Project.setupCommon() {
         ndkVersion = "29.0.13113456"
 
         defaultConfig {
-            minSdk = 23
+            minSdk = 24
         }
 
         compileOptions {
@@ -93,7 +93,8 @@ fun Project.setupCommon() {
                     "/META-INF/versions/**",
                     "/org/bouncycastle/**",
                     "/org/apache/commons/**",
-                    "/kotlin/**",
+                    // 为了使用反射，需要保留
+                    // "/kotlin/**",
                     "/kotlinx/**",
                     "/okhttp3/**",
                     "/*.txt",

@@ -10,9 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.topjohnwu.magisk.core.AppContext
 import com.topjohnwu.magisk.core.data.magiskdb.PolicyDao
 import com.topjohnwu.magisk.core.model.su.SuPolicy
-import com.topjohnwu.magisk.ui.superuser.AppSort.Order
 import com.topjohnwu.superuser.Shell
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.invoke
 import kotlinx.coroutines.launch
@@ -37,9 +35,10 @@ class SuperUserViewModel(app: Application) : AndroidViewModel(app), DIAware {
     private val mutex = Mutex()
     private val _apps = mutableStateListOf<AppInfo>()
 
-    var filter by mutableStateOf<AppFilter>(AppFilter.ALL)
-    var sort by mutableStateOf<List<AppSortData>>(AppSorts.map { it to Order.ASC }.toImmutableList())
+    var filter by mutableStateOf<AppFilter>(AppFilter.USER)
+    var priorities by mutableStateOf<List<AppPriority>>(AppPriorities)
     var searchText by mutableStateOf("")
+    var sort by mutableStateOf<AppSort>(AppSort.Name)
 
     val apps by derivedStateOf {
         _apps
@@ -54,20 +53,16 @@ class SuperUserViewModel(app: Application) : AndroidViewModel(app), DIAware {
                 it.label.contains(searchText, true) || it.packageName.contains(searchText, true)
             }
             .sortedWith { p0, p1 ->
-                sort.forEach { (sort, order) ->
-                    if (sort.equals(p0, p1)) {
-                        return@forEach
-                    } else if (order == Order.ASC && sort.isNeedOrder) {
-                        return@sortedWith sort.compare(p0, p1)
-                    } else {
-                        return@sortedWith sort.compare(p1, p0)
+                priorities
+                    .fold(0) { acc, priority ->
+                        if (acc != 0) return@sortedWith acc
+                        priority.compare(p0, p1)
                     }
-                }
-                0
+                    .takeIf { it != 0 }
+                    ?: sort.compare(p0, p1)
             }
+            .also { badge = it.count { item -> item.isSuperUser } }
     }
-
-    val badge by derivedStateOf { _apps.count { it.isSuperUser }.toString().takeUnless { isLoading || isRefreshing } }
 
     init {
         isLoading = true
@@ -109,10 +104,10 @@ class SuperUserViewModel(app: Application) : AndroidViewModel(app), DIAware {
                 db.update(policy)
             }
             mutex.withLock {
-                Dispatchers.Main { item.suPolicy = policy }
+                item.suPolicy = policy
                 _apps.forEach {
                     if (it.uid == item.uid) {
-                        Dispatchers.Main { it.suPolicy = policy }
+                        it.suPolicy = policy
                     }
                 }
             }
@@ -144,7 +139,7 @@ class SuperUserViewModel(app: Application) : AndroidViewModel(app), DIAware {
         val arg = if (enable) "add" else "rm"
         val (name, pkg) = process
         Dispatchers.IO { Shell.cmd("magisk --denylist $arg $pkg \'$name\'").submit() }
-        Dispatchers.Main { item.processes[index] = process.copy(isEnabled = enable) }
+        item.processes[index] = process.copy(isEnabled = enable)
     }
 
     private suspend fun loadApps() {
@@ -198,5 +193,12 @@ class SuperUserViewModel(app: Application) : AndroidViewModel(app), DIAware {
                 }
                 return@filter true
             }
+
+    companion object {
+
+        var badge by mutableStateOf(-1)
+            private set
+
+    }
 
 }

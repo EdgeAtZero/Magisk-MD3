@@ -1,5 +1,7 @@
 package com.topjohnwu.magisk.ui.install
 
+import android.net.Uri
+import android.os.Parcel
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
@@ -16,7 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.topjohnwu.magisk.core.Info
-import com.topjohnwu.magisk.util.CommonActivityResultProvider
+import com.topjohnwu.magisk.core.base.ContentResultCallback
+import com.topjohnwu.magisk.core.base.IActivityExtension
 import me.edgeatzero.compose.component.Column
 import me.edgeatzero.compose.scaffold.Basic
 import me.edgeatzero.compose.scaffold.Scaffolds
@@ -32,6 +35,7 @@ fun InstallScreen(
     viewModel: InstallViewModel,
     onNavigateToFlash: (InstallMethod, List<InstallOption>, String?) -> Unit
 ) {
+    val context = LocalContext.current
     val scrollState = rememberScrollState()
     val selectFileToast = rememberToastAction(
         message = "选择一个原始映像文件（*.img）、Odin 包（*.tar）或 payload.bin（*.bin）",
@@ -41,12 +45,25 @@ fun InstallScreen(
 
     when (viewModel.method) {
         InstallMethod.Patch -> {
-            val activity = LocalContext.current as CommonActivityResultProvider
-            LaunchedEffect(activity) {
-                activity.GetContentHandler.launch("*/*") {
-                    viewModel.patchFile = it.toString()
-                }
-                selectFileToast()
+            LaunchedEffect(Unit) {
+                (context as IActivityExtension).getContent(
+                    "*/*",
+                    object : ContentResultCallback {
+
+                        override fun onActivityLaunch() {
+                            selectFileToast()
+                        }
+
+                        override fun onActivityResult(result: Uri) {
+                            viewModel.patchFile = result.toString()
+                        }
+
+                        override fun describeContents(): Int = 0
+
+                        override fun writeToParcel(dest: Parcel, flags: Int) = Unit
+
+                    }
+                )
             }
         }
 

@@ -8,5 +8,5 @@ data class ActionParams(
     val id: String,
     val name: String
 ) {
-    constructor(dest: MainDestination.ModuleNav.Action) : this(dest.id, dest.name)
+    constructor(dest: MainDestination.Action) : this(dest.id, dest.name)
 }

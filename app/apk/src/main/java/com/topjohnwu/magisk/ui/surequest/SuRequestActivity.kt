@@ -5,47 +5,82 @@ import android.content.pm.ActivityInfo
 import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
-import android.view.Window
+import android.view.Gravity
+import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.FrameLayout
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ComposeView
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
 import com.topjohnwu.magisk.R
-import com.topjohnwu.magisk.arch.UIActivity
-import com.topjohnwu.magisk.arch.viewModel
+import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.base.UntrackedActivity
 import com.topjohnwu.magisk.core.su.SuCallbackHandler
 import com.topjohnwu.magisk.core.su.SuCallbackHandler.REQUEST
-import com.topjohnwu.magisk.databinding.ActivityRequestBinding
-import com.topjohnwu.magisk.ui.theme.Theme2
+import com.topjohnwu.magisk.ui.theme.MagiskTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.invoke
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.android.x.viewmodel.viewModel
 
-open class SuRequestActivity : UIActivity<ActivityRequestBinding>(), UntrackedActivity {
+open class SuRequestActivity : AppCompatActivity(), UntrackedActivity, DIAware {
 
-    override val layoutRes: Int = R.layout.activity_request
-    override val viewModel: SuRequestViewModel by viewModel()
+    override val di by closestDI()
+
+    private val viewModel: SuRequestViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         window.addFlags(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             window.setHideOverlayWindows(true)
         }
-        setTheme(Theme2.selected.themeRes)
+        setTheme(R.style.Foundation_Default)
         super.onCreate(savedInstanceState)
-
         if (intent.action == Intent.ACTION_VIEW) {
             val action = intent.getStringExtra("action")
             if (action == REQUEST) {
-                viewModel.handleRequest(intent)
-            } else {
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        SuCallbackHandler.run(this@SuRequestActivity, action, intent.extras)
+                lifecycleScope.launch(Dispatchers.Default) {
+                    if (viewModel.handler.start(intent)) {
+                        Dispatchers.Main {
+                            viewModel.finishCallback.value = { finish() }
+                            viewModel.timer.start()
+                            with(ComposeView(this@SuRequestActivity)) {
+                                setContentView(
+                                    this,
+                                    FrameLayout.LayoutParams(
+                                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                                        Gravity.CENTER
+                                    )
+                                )
+                                setContent {
+                                    MagiskTheme {
+                                        SuRequestDialog(viewModel = viewModel)
+                                    }
+                                }
+                                if (Config.suTapjack) {
+                                    ViewCompat.setAccessibilityDelegate(
+                                        this,
+                                        SuRequestViewModel.EmptyAccessibilityDelegate
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        Dispatchers.Main { finish() }
                     }
-                    finish()
+                }
+            } else {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    SuCallbackHandler.run(this@SuRequestActivity, action, intent.extras)
+                    Dispatchers.Main {
+                        finish()
+                    }
                 }
             }
         } else {
@@ -59,11 +94,8 @@ open class SuRequestActivity : UIActivity<ActivityRequestBinding>(), UntrackedAc
         return theme
     }
 
-    override fun onBackPressed() {
-        viewModel.denyPressed()
-    }
-
     override fun finish() {
         super.finishAndRemoveTask()
     }
+
 }

@@ -27,22 +27,6 @@ sealed class InstallMethod {
         override val isAvailable get() = Info.isRooted && Info.isAB && !Info.isEmulator
     }
 
-    companion object : NavType<InstallMethod>(isNullableAllowed = false) {
-
-        override fun get(bundle: SavedState, key: String): InstallMethod? =
-            bundle.getString(key)?.let { parseValue(it) }
-
-        override fun put(bundle: SavedState, key: String, value: InstallMethod) =
-            bundle.putString(key, serializeAsValue(value))
-
-        override fun parseValue(value: String): InstallMethod =
-            Json.decodeFromString(value)
-
-        override fun serializeAsValue(value: InstallMethod): String =
-            Json.encodeToString(value)
-
-    }
-
 }
 
 val InstallMethods = listOf(Patch, Direct, InactiveSlot)

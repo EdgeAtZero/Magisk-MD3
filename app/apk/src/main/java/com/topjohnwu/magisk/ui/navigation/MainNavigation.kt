@@ -15,19 +15,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navigation
 import androidx.navigation.toRoute
-import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.ui.action.ActionParams
 import com.topjohnwu.magisk.ui.action.ActionScreen
 import com.topjohnwu.magisk.ui.action.ActionViewModel
-import com.topjohnwu.magisk.ui.flash.FlashAction
+import com.topjohnwu.magisk.ui.flash.FlashParams
 import com.topjohnwu.magisk.ui.flash.FlashScreen
 import com.topjohnwu.magisk.ui.flash.FlashViewModel
 import com.topjohnwu.magisk.ui.home.HomeScreen
 import com.topjohnwu.magisk.ui.home.HomeViewModel
-import com.topjohnwu.magisk.ui.install.InstallMethod
-import com.topjohnwu.magisk.ui.install.InstallOption
 import com.topjohnwu.magisk.ui.install.InstallScreen
 import com.topjohnwu.magisk.ui.install.InstallViewModel
 import com.topjohnwu.magisk.ui.module.ModuleScreen
@@ -41,11 +37,7 @@ import me.edgeatzero.compose.util.ProvideUIMode
 import me.edgeatzero.compose.util.UIMode
 import me.edgeatzero.compose.util.dynamicBarColor
 import me.edgeatzero.compose.util.none
-import org.kodein.di.compose.localDI
 import org.kodein.di.compose.rememberViewModel
-import org.kodein.di.direct
-import org.kodein.di.instance
-import kotlin.reflect.typeOf
 
 @Composable
 fun MainNavigation() {
@@ -59,21 +51,23 @@ fun MainNavigation() {
 }
 
 @Composable
-private fun BadgeNavigationIcon(
-    destination: MainDestination,
-    isSelected: Boolean,
-    isBeSelected: Boolean
-): Unit = with(localDI().direct) {
+private fun <T> BadgeNavigationIcon(
+    destination: T,
+    isSelected: Boolean
+) where T : Destination, T : Extra {
     BadgedBox(
         badge = {
-            if (remember { destination in listOf(ModuleNav.Main, SuperUser) }) {
-                when {
-                    isBeSelected && destination == ModuleNav.Main -> remember(this) { instance<ModuleViewModel>() }.badge
-
-                    isBeSelected && destination == SuperUser -> remember(this) { instance<SuperUserViewModel>() }.badge
-
-                    else -> null
-                }?.let { Badge { Text(text = it) } } ?: Badge()
+            val badge = when (destination) {
+                SuperUser -> SuperUserViewModel.badge
+                Module -> ModuleViewModel.badge
+                else -> null
+            }
+            if (badge != null) {
+                if (badge != -1) {
+                    Badge { Text(text = badge.toString()) }
+                } else {
+                    Badge()
+                }
             }
         }
     ) {
@@ -94,7 +88,7 @@ private fun MobileView(navController: NavHostController) {
         bottomBar = {
             Column {
                 AnimatedVisibility(
-                    visible = MainDestinations.contains(route),
+                    visible = MainDestinations.any { route == it.route },
                     enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
                     exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top)
                 ) {
@@ -104,14 +98,12 @@ private fun MobileView(navController: NavHostController) {
                             .navigationBarsPadding(),
                         containerColor = Color.Transparent
                     ) {
-                        MainDestinations.filter { !it.isRootNeed || Info.env.isActive }.forEach { destination ->
+                        MainDestinations.forEach { destination ->
+                            if (destination !is Extra) return@forEach
                             val isSelected = route == destination.route
-                            var isBeSelected by rememberSaveable { mutableStateOf(false) }
-
-                            LaunchedEffect(isSelected) { if (isSelected) isBeSelected = true }
 
                             NavigationBarItem(
-                                icon = { BadgeNavigationIcon(destination, isSelected, isBeSelected) },
+                                icon = { BadgeNavigationIcon(destination, isSelected) },
                                 label = { Text(destination.label) },
                                 alwaysShowLabel = false,
                                 selected = isSelected,
@@ -146,7 +138,7 @@ private fun TabletView(navController: NavHostController) {
     Scaffold(contentWindowInsets = WindowInsets.none) { contentPadding ->
         Row {
             AnimatedVisibility(
-                visible = MainDestinations.contains(route),
+                visible = MainDestinations.any { route == it.route },
                 enter = fadeIn() + expandHorizontally(expandFrom = Alignment.End),
                 exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.End)
             ) {
@@ -156,14 +148,12 @@ private fun TabletView(navController: NavHostController) {
                         .navigationBarsPadding(),
                     containerColor = Color.Transparent,
                 ) {
-                    MainDestinations.filter { !it.isRootNeed || Info.env.isActive }.forEach { destination ->
+                    MainDestinations.forEach { destination ->
+                        if (destination !is Extra) return@forEach
                         val isSelected = route == destination.route
-                        var isBeSelected by rememberSaveable { mutableStateOf(false) }
-
-                        LaunchedEffect(isSelected) { if (isSelected) isBeSelected = true }
 
                         NavigationRailItem(
-                            icon = { BadgeNavigationIcon(destination, isSelected, isBeSelected) },
+                            icon = { BadgeNavigationIcon(destination, isSelected) },
                             label = { Text(destination.label) },
                             alwaysShowLabel = false,
                             selected = isSelected,
@@ -196,98 +186,73 @@ private fun MainNavigationHost(
             NavHost(
                 modifier = modifier,
                 navController = navController,
-                startDestination = HomeNav,
+                startDestination = Home,
                 enterTransition = { fadeIn() },
                 exitTransition = { fadeOut() },
                 popEnterTransition = { fadeIn() },
                 popExitTransition = { fadeOut() }
             ) {
-                navigation<HomeNav>(startDestination = HomeNav.Main) {
-                    composable<HomeNav.Main> {
-                        val viewModel by rememberViewModel<HomeViewModel>()
-                        HomeScreen(
-                            rootContentPadding = contentPadding,
-                            viewModel = viewModel,
-                            onNavigateToInstall = {
-                                navController.navigate(HomeNav.Install)
-                            }
-                        )
-                    }
-                    composable<HomeNav.Uninstall> {
-                        val viewModel by rememberViewModel<FlashViewModel>(FlashAction.Uninstall)
-                        FlashScreen(
-                            rootContentPadding = contentPadding,
-                            viewModel = viewModel
-                        )
-                    }
-                    composable<HomeNav.Install> {
-                        val viewModel by rememberViewModel<InstallViewModel>()
-                        InstallScreen(
-                            rootContentPadding = contentPadding,
-                            viewModel = viewModel,
-                            onNavigateToFlash = { p0, p1, p2 ->
-                                navController.navigateUp()
-                                navController.navigate(HomeNav.Flash(p0, ArrayList(p1), p2))
-                            }
-                        )
-                    }
-                    composable<HomeNav.Flash>(
-                        typeMap = mapOf(
-                            typeOf<InstallMethod>() to InstallMethod.Companion,
-                            typeOf<ArrayList<InstallOption>>() to InstallOption.Companion
-                        )
-                    ) { backStackEntry ->
-                        val argument = backStackEntry.toRoute<HomeNav.Flash>().let(FlashAction::Install)
-                        val viewModel by rememberViewModel<FlashAction.Install, FlashViewModel>(arg = argument)
-                        FlashScreen(
-                            rootContentPadding = contentPadding,
-                            viewModel = viewModel
-                        )
-                    }
+                composable<Home>(deepLinks = listOf(Home.deeplink), typeMap = Home.typeMap) {
+                    val viewModel by rememberViewModel<HomeViewModel>()
+                    HomeScreen(
+                        rootContentPadding = contentPadding,
+                        viewModel = viewModel,
+                        onNavigateToInstall = { navController.navigate(Install) },
+                        onNavigateToUninstall = { navController.navigate(Flash()) }
+                    )
                 }
-                composable<SuperUser> {
+                composable<SuperUser>(deepLinks = listOf(SuperUser.deeplink), typeMap = SuperUser.typeMap) {
                     val viewModel by rememberViewModel<SuperUserViewModel>()
                     SuperUserScreen(
                         rootContentPadding = contentPadding,
                         viewModel = viewModel
                     )
                 }
-                navigation<ModuleNav>(startDestination = ModuleNav.Main) {
-                    composable<ModuleNav.Main> {
-                        val viewModel by rememberViewModel<ModuleViewModel>()
-                        ModuleScreen(
-                            rootContentPadding = contentPadding,
-                            viewModel = viewModel,
-                            onModuleAction = { p0, p1 ->
-                                navController.navigate(ModuleNav.Action(p0, p1))
-                            },
-                            onModuleInstall = {
-                                navController.navigate(ModuleNav.Install(it))
-                            }
-                        )
-                    }
-                    composable<ModuleNav.Action> { backStackEntry ->
-                        val argument = backStackEntry.toRoute<ModuleNav.Action>().let(::ActionParams)
-                        val viewModel by rememberViewModel<ActionParams, ActionViewModel>(arg = argument)
-                        ActionScreen(
-                            rootContentPadding = contentPadding,
-                            viewModel = viewModel
-                        )
-                    }
-                    composable<ModuleNav.Install> { backStackEntry ->
-                        val argument = backStackEntry.toRoute<ModuleNav.Install>().let(FlashAction::Module)
-                        val viewModel by rememberViewModel<FlashAction, FlashViewModel>(arg = argument)
-                        FlashScreen(
-                            rootContentPadding = contentPadding,
-                            viewModel = viewModel
-                        )
-                    }
+                composable<Module>(deepLinks = listOf(Module.deeplink), typeMap = Module.typeMap) {
+                    val viewModel by rememberViewModel<ModuleViewModel>()
+                    ModuleScreen(
+                        rootContentPadding = contentPadding,
+                        viewModel = viewModel,
+                        onModuleAction = { p0, p1 ->
+                            navController.navigate(Action(p0, p1))
+                        },
+                        onModuleInstall = {
+                            navController.navigate(Flash(it))
+                        }
+                    )
                 }
-                composable<Settings> {
+                composable<Settings>(deepLinks = listOf(Settings.deeplink), typeMap = Settings.typeMap) {
                     val viewModel by rememberViewModel<SettingsViewModel>()
                     SettingsScreen(
                         rootContentPadding = contentPadding,
                         viewModel = viewModel
+                    )
+                }
+                composable<Action> { backStackEntry ->
+                    val argument = backStackEntry.toRoute<Action>().let(::ActionParams)
+                    val viewModel by rememberViewModel<ActionParams, ActionViewModel>(arg = argument)
+                    ActionScreen(
+                        rootContentPadding = contentPadding,
+                        viewModel = viewModel
+                    )
+                }
+                composable<Flash>(deepLinks = listOf(Flash.deeplink), typeMap = Flash.typeMap) { backStackEntry ->
+                    val argument = backStackEntry.toRoute<Flash>().action
+                    val viewModel by rememberViewModel<FlashParams, FlashViewModel>(arg = argument)
+                    FlashScreen(
+                        rootContentPadding = contentPadding,
+                        viewModel = viewModel
+                    )
+                }
+                composable<Install> {
+                    val viewModel by rememberViewModel<InstallViewModel>()
+                    InstallScreen(
+                        rootContentPadding = contentPadding,
+                        viewModel = viewModel,
+                        onNavigateToFlash = { p0, p1, p2 ->
+                            navController.navigateUp()
+                            navController.navigate(Flash(p0, ArrayList(p1), p2))
+                        }
                     )
                 }
             }

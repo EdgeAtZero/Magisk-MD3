@@ -30,6 +30,7 @@ import me.edgeatzero.compose.theme.MaterialColors
 fun AppInfoCard(
     modifier: Modifier = Modifier,
     item: AppInfo,
+    subtext: (AppInfo) -> String,
     viewModel: SuperUserViewModel? = null,
     isQuickSettingsEnable: Boolean = true,
     isSelected: Boolean = false,
@@ -38,12 +39,8 @@ fun AppInfoCard(
 ) {
     Box(
         modifier = modifier
-            .let {
-                if (onClick != null) it.clickable(onClick = onClick, role = Role.Button) else it
-            }
-            .background(
-                if (isSelected) MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp) else Color.Unspecified
-            )
+            .let { if (onClick != null) it.clickable(onClick = onClick, role = Role.Button) else it }
+            .background(if (isSelected) MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp) else Color.Unspecified)
     ) {
         Row(
             modifier = Modifier
@@ -54,7 +51,6 @@ fun AppInfoCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             AsyncImage(
-                modifier = Modifier.size(38.dp),
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(item.packageInfo)
                     .crossfade(true)
@@ -78,7 +74,7 @@ fun AppInfoCard(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = item.packageName,
+                        text = subtext(item),
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 2,
                         style = MaterialTheme.typography.labelMedium
