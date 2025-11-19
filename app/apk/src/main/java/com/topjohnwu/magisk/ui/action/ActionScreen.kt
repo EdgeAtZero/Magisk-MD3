@@ -1,20 +1,24 @@
 package com.topjohnwu.magisk.ui.action
 
+import android.view.KeyEvent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.topjohnwu.magisk.ui.MainActivity
+import me.edgeatzero.compose.component.AutomateBottomLazyColumn
 import me.edgeatzero.compose.scaffold.Basic
 import me.edgeatzero.compose.scaffold.Decorable
+import me.edgeatzero.compose.scaffold.NavigationIconButton
 import me.edgeatzero.compose.scaffold.Scaffolds
 import me.edgeatzero.compose.scaffold.TopBars
 import me.edgeatzero.compose.util.dynamicBarColor
@@ -43,6 +47,18 @@ fun ActionScreen(
         }
     }
 
+    DisposableEffect(Unit) {
+        MainActivity.keyEventDispatcher = {
+            when (it.keyCode) {
+                KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN -> true
+                else -> false
+            }
+        }
+        onDispose {
+            MainActivity.keyEventDispatcher = null
+        }
+    }
+
     Scaffolds.Basic(
         modifier = modifier,
         rootContentPadding = rootContentPadding,
@@ -54,9 +70,7 @@ fun ActionScreen(
                     enter = fadeIn() + expandHorizontally(expandFrom = Alignment.End),
                     exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.End)
                 ) {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
+                    Scaffolds.NavigationIconButton()
                 }
             }
         ) { topbar ->
@@ -76,14 +90,19 @@ fun ActionScreen(
             }
         }
     ) { contentPadding ->
-        LazyColumn(
+        AutomateBottomLazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(all = 16.dp),
-            contentPadding = contentPadding
+            contentPadding = contentPadding,
+            count = viewModel.log.size
         ) {
             items(viewModel.log.size) {
-                Text(text = viewModel.log[it], style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    modifier = Modifier.animateItem(),
+                    text = viewModel.log[it],
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }

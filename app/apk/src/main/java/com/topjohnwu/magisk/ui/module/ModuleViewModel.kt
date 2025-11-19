@@ -52,7 +52,7 @@ class ModuleViewModel(app: Application) : AndroidViewModel(app), DIAware {
                     .takeIf { it != 0 }
                     ?: sort.compare(p0, p1)
             }
-            .also { badge = it.size }
+            .also { badge = if (it.isNotEmpty()) it.size else -1 }
     }
 
     init {

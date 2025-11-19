@@ -61,7 +61,7 @@ class SuperUserViewModel(app: Application) : AndroidViewModel(app), DIAware {
                     .takeIf { it != 0 }
                     ?: sort.compare(p0, p1)
             }
-            .also { badge = it.count { item -> item.isSuperUser } }
+            .also { badge = if (it.isNotEmpty()) it.count { item -> item.isSuperUser } else -1 }
     }
 
     init {

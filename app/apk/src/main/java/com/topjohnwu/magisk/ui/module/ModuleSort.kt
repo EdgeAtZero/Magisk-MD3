@@ -1,7 +1,14 @@
 package com.topjohnwu.magisk.ui.module
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Abc
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.FormatSize
+import androidx.compose.material.icons.filled.Numbers
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.topjohnwu.magisk.ui.module.ModuleSort.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 sealed class ModuleSort() {

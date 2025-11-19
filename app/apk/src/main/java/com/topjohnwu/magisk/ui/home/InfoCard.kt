@@ -3,17 +3,32 @@ package com.topjohnwu.magisk.ui.home
 import android.os.Build
 import android.system.Os
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Android
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Vaccines
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Info
@@ -21,6 +36,8 @@ import com.topjohnwu.magisk.ui.icon.Linux
 import com.topjohnwu.magisk.ui.icon.Magisk
 import com.topjohnwu.magisk.util.getSELinuxStatus
 import com.topjohnwu.magisk.util.getZygiskInfo
+import me.edgeatzero.compose.component.Card
+import me.edgeatzero.compose.component.ListItem
 
 
 @Composable
@@ -33,32 +50,27 @@ fun InfoCard(modifier: Modifier = Modifier, autoExpand: Boolean = false) {
     }
     Card(
         modifier = modifier,
-        colors = CardDefaults.elevatedCardColors(),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
         shape = MaterialTheme.shapes.medium
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(all = 24.dp)
-        ) {
-            InfoCardItem(
-                label = "管理器版本",
-                icon = Icons.Filled.Magisk,
-                content = "${BuildConfig.APP_VERSION_NAME} (${BuildConfig.APP_VERSION_CODE})" + if (BuildConfig.DEBUG) " (D)" else ""
+        Column {
+            ListItem(
+                headlineContent = { Text(text = "管理器版本") },
+                supportingContent = { Text(text = "${BuildConfig.APP_VERSION_NAME} (${BuildConfig.APP_VERSION_CODE})" + if (BuildConfig.DEBUG) " (D)" else "") },
+                leadingContent = { Icon(imageVector = Icons.Filled.Magisk, contentDescription = null) }
             )
             if (Info.isZygiskEnabled) {
-                Spacer(Modifier.height(16.dp))
-                InfoCardItem(
-                    label = "Zygisk 状态",
-                    content = "已启用" + getZygiskInfo()?.let { " | ${it.name} | ${it.version}" },
-                    icon = Icons.Filled.Vaccines
+                ListItem(
+                    headlineContent = { Text(text = "Zygisk 状态") },
+                    supportingContent = { Text(text = "已启用" + getZygiskInfo()?.let { " | ${it.name} | ${it.version}" }) },
+                    leadingContent = { Icon(imageVector = Icons.Filled.Vaccines, contentDescription = null) }
                 )
             }
             if (!expanded) {
-                Spacer(Modifier.height(16.dp))
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     IconButton(
@@ -72,67 +84,30 @@ fun InfoCard(modifier: Modifier = Modifier, autoExpand: Boolean = false) {
             AnimatedVisibility(visible = expanded) {
                 Column {
                     val uname = Os.uname()
-                    Spacer(Modifier.height(16.dp))
-                    InfoCardItem(
-                        label = "内核版本",
-                        content = "${uname.release} (${uname.machine})",
-                        icon = Icons.Filled.Linux,
+                    ListItem(
+                        headlineContent = { Text(text = "内核版本") },
+                        supportingContent = { Text(text = "${uname.release} (${uname.machine})") },
+                        leadingContent = { Icon(imageVector = Icons.Filled.Linux, contentDescription = null) }
                     )
-                    Spacer(Modifier.height(16.dp))
-                    InfoCardItem(
-                        label = "Android 版本",
-                        content = "${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})",
-                        icon = Icons.Filled.Android,
+                    ListItem(
+                        headlineContent = { Text(text = "Android 版本") },
+                        supportingContent = { Text(text = "${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})") },
+                        leadingContent = { Icon(imageVector = Icons.Filled.Android, contentDescription = null) }
                     )
-                    Spacer(Modifier.height(16.dp))
-                    InfoCardItem(
-                        label = "ABI 类型",
-                        content = Build.SUPPORTED_ABIS.joinToString(", "),
-                        icon = Icons.Filled.Memory,
+                    ListItem(
+                        headlineContent = { Text(text = "ABI 类型") },
+                        supportingContent = { Text(text = Build.SUPPORTED_ABIS.joinToString(", ")) },
+                        leadingContent = { Icon(imageVector = Icons.Filled.Memory, contentDescription = null) }
                     )
                     if (Info.env.isActive) {
-                        Spacer(Modifier.height(16.dp))
-                        InfoCardItem(
-                            label = "SELinux状态",
-                            content = getSELinuxStatus(),
-                            icon = Icons.Filled.Security,
+                        ListItem(
+                            headlineContent = { Text(text = "SELinux状态") },
+                            supportingContent = { Text(text = getSELinuxStatus()) },
+                            leadingContent = { Icon(imageVector = Icons.Filled.Security, contentDescription = null) }
                         )
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun InfoCardItem(label: String, content: String, icon: Any? = null) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        if (icon != null) {
-            when (icon) {
-                is ImageVector -> Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 20.dp)
-                )
-
-                is Painter -> Icon(
-                    painter = icon,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 20.dp)
-                )
-            }
-        }
-        Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = content,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(top = 4.dp)
-            )
         }
     }
 }

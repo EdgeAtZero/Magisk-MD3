@@ -91,6 +91,7 @@ lsparanoid-plugin = { module = "org.lsposed.lsparanoid:gradle-plugin", version =
 
 appiconloader = { module = "me.zhanghai.android.appiconloader:appiconloader", version = "1.5.0" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version = "3.3.0" }
+compose-settings = { module = "com.github.alorma.compose-settings:ui-tiles-extended", version = "2.13.0" }
 markdown-material3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version = "0.37.0" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version = "3.0.0" }
 

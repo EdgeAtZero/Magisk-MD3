@@ -1,14 +1,18 @@
 package com.topjohnwu.magisk.ui.install
 
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.window.DialogWindowProvider
 import me.edgeatzero.android.setupWindowBlurListener
+import me.edgeatzero.compose.component.SplicedCard
 
 @ExperimentalMaterial3Api
 @Composable
@@ -29,9 +33,21 @@ fun InactiveSlotWarningDialog(
             (LocalView.current.parent as DialogWindowProvider).setupWindowBlurListener()
         },
         confirmButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = "确定")
-            }
+            SplicedCard(
+                modifier = Modifier.fillMaxWidth(),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                content = listOf(
+                    {
+                        TextButton(
+                            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
+                            shape = RectangleShape,
+                            onClick = onDismissRequest
+                        ) {
+                            Text(text = "确定")
+                        }
+                    }
+                )
+            )
         },
         onDismissRequest = onDismissRequest
     )

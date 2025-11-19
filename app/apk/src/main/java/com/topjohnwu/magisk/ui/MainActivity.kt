@@ -1,6 +1,7 @@
 package com.topjohnwu.magisk.ui
 
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -43,8 +44,18 @@ class MainActivity : AppCompatActivity(), SplashScreenHost {
         }
     }
 
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        return keyEventDispatcher?.invoke(event) == true || super.dispatchKeyEvent(event)
+    }
+
     override fun showInvalidStateMessage() {
         shouldShowInvalidStateMessage = true
+    }
+
+    companion object {
+
+        var keyEventDispatcher: ((KeyEvent) -> Boolean)? = null
+
     }
 
 }

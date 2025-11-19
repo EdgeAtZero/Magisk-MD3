@@ -79,6 +79,7 @@ dependencies {
 
     implementation(libs.appiconloader)
     implementation(libs.coil.compose)
+    implementation(libs.compose.settings)
     implementation(libs.markdown.material3)
     implementation(libs.reorderable)
     implementation(libs.kodein.compose)

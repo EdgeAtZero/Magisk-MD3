@@ -65,7 +65,7 @@ fun SuperUserList(
                                 subtext = { if (viewModel.sort == AppSort.UID) "UID: ${it.uid}" else it.packageName },
                                 isQuickSettingsEnable = true,
                                 isShowLabel = true,
-                                isSelected = currentPkg == item.packageName
+                                isSelected = viewModel.sort != AppSort.Package && currentPkg == item.packageName
                             ) {
                                 onNavigateToDetail(item.packageName)
                             }

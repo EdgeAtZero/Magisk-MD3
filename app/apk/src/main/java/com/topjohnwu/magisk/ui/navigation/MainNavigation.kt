@@ -1,10 +1,15 @@
 package com.topjohnwu.magisk.ui.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuOpen
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MenuOpen
+import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +38,7 @@ import com.topjohnwu.magisk.ui.settings.SettingsScreen
 import com.topjohnwu.magisk.ui.settings.SettingsViewModel
 import com.topjohnwu.magisk.ui.superuser.SuperUserScreen
 import com.topjohnwu.magisk.ui.superuser.SuperUserViewModel
+import kotlinx.coroutines.launch
 import me.edgeatzero.compose.util.ProvideUIMode
 import me.edgeatzero.compose.util.UIMode
 import me.edgeatzero.compose.util.dynamicBarColor
@@ -63,7 +69,9 @@ private fun <T> BadgeNavigationIcon(
                 else -> null
             }
             if (badge != null) {
-                if (badge != -1) {
+                if (badge > 99) {
+                    Badge { Text(text = "99+") }
+                } else if (badge != -1) {
                     Badge { Text(text = badge.toString()) }
                 } else {
                     Badge()
@@ -117,8 +125,6 @@ private fun MobileView(navController: NavHostController) {
                                     }
                                 }
                             )
-
-
                         }
                     }
                 }
@@ -132,6 +138,9 @@ private fun MobileView(navController: NavHostController) {
 
 @Composable
 private fun TabletView(navController: NavHostController) {
+    val coroutineScope = rememberCoroutineScope()
+    val navigationRailState = rememberWideNavigationRailState()
+    val isRailExpanded by remember { derivedStateOf { navigationRailState.targetValue == WideNavigationRailValue.Expanded } }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route
 
@@ -142,20 +151,52 @@ private fun TabletView(navController: NavHostController) {
                 enter = fadeIn() + expandHorizontally(expandFrom = Alignment.End),
                 exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.End)
             ) {
-                NavigationRail(
+                WideNavigationRail(
                     modifier = Modifier
                         .dynamicBarColor()
                         .navigationBarsPadding(),
-                    containerColor = Color.Transparent,
+                    state = navigationRailState,
+                    header = {
+                        IconButton(
+                            modifier = Modifier.padding(start = 24.dp),
+                            onClick = {
+                                coroutineScope.launch {
+                                    if (isRailExpanded) {
+                                        navigationRailState.collapse()
+                                    } else {
+                                        navigationRailState.expand()
+                                    }
+                                }
+                            },
+                        ) {
+                            Crossfade(targetState = isRailExpanded) { targetState ->
+                                if (targetState) {
+                                    Icon(Icons.AutoMirrored.Filled.MenuOpen, contentDescription = null)
+                                } else {
+                                    Icon(Icons.Filled.Menu, contentDescription = null)
+                                }
+                            }
+                        }
+                    },
+                    colors = WideNavigationRailDefaults.colors(
+                        containerColor = Color.Transparent
+                    )
                 ) {
                     MainDestinations.forEach { destination ->
                         if (destination !is Extra) return@forEach
                         val isSelected = route == destination.route
 
-                        NavigationRailItem(
+                        WideNavigationRailItem(
+                            railExpanded = isRailExpanded,
                             icon = { BadgeNavigationIcon(destination, isSelected) },
-                            label = { Text(destination.label) },
-                            alwaysShowLabel = false,
+                            label = {
+                                AnimatedContent(targetState = isRailExpanded) { targetState ->
+                                    Text(
+                                        modifier = if (targetState) Modifier.padding(start = 6.dp) else Modifier,
+                                        text = destination.label
+                                    )
+                                }
+                            },
                             selected = isSelected,
                             onClick = {
                                 navController.navigate(destination) {

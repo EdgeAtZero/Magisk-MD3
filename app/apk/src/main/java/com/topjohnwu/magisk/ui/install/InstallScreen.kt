@@ -4,9 +4,12 @@ import android.net.Uri
 import android.os.Parcel
 import android.widget.Toast
 import androidx.compose.animation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
@@ -17,14 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.base.ContentResultCallback
 import com.topjohnwu.magisk.core.base.IActivityExtension
-import me.edgeatzero.compose.component.Column
 import me.edgeatzero.compose.scaffold.Basic
 import me.edgeatzero.compose.scaffold.Scaffolds
 import me.edgeatzero.compose.scaffold.TopBars
 import me.edgeatzero.compose.util.onBackPressed
+import me.edgeatzero.compose.util.plus
 import me.edgeatzero.compose.util.rememberToastAction
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -109,22 +113,33 @@ fun InstallScreen(
             }
         }
     ) { contentPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(all = 16.dp),
-            contentPadding = contentPadding
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Adaptive(400.dp),
+            contentPadding = contentPadding + 16.dp,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalItemSpacing = 16.dp
         ) {
-            if (!Info.isEmulator && (!Info.isSAR || Info.isFDE || !Info.ramdisk)) {
-                InstallOptionsCard(options = viewModel.options)
-                Spacer(modifier = Modifier.size(8.dp))
+            if (BuildConfig.DEBUG || !Info.isEmulator && (!Info.isSAR || Info.isFDE || !Info.ramdisk)) {
+                item {
+                    InstallOptionsCard(
+                        modifier = Modifier.animateItem().fillMaxWidth(),
+                        options = viewModel.options
+                    )
+                }
             }
-            InstallMethodCard(method = viewModel.method, onMethodChanged = viewModel::method::set)
-            AnimatedContent(targetState = viewModel.markdown) { targetState ->
-                targetState?.let {
-                    Spacer(modifier = Modifier.size(8.dp))
-                    InstallMarkdownCard(markdown = it)
+            item {
+                InstallMethodCard(
+                    modifier = Modifier.animateItem().fillMaxWidth(),
+                    method = viewModel.method,
+                    onMethodChanged = viewModel::method::set
+                )
+            }
+            viewModel.markdown?.let {
+                item {
+                    InstallMarkdownCard(
+                        modifier = Modifier.animateItem(),
+                        markdown = it
+                    )
                 }
             }
         }

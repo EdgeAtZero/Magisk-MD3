@@ -16,7 +16,7 @@ import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.ktx.reboot
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun RebootMenu(modifier: Modifier = Modifier) {
     val activity = LocalContext.current as Activity
@@ -43,7 +43,7 @@ fun RebootMenu(modifier: Modifier = Modifier) {
         }
         ExposedDropdownMenu(
             expanded = isExpanded,
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             shape = MaterialTheme.shapes.medium,
             matchAnchorWidth = false,
             onDismissRequest = { isExpanded = false },

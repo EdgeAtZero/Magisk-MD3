@@ -29,7 +29,11 @@ fun SettingsScreen(
             title = { Text(text = "设置") }
         )
     ) { contentPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding)
+        ) {
             Text(
                 modifier = Modifier.align(Alignment.Center),
                 text = "施工中",

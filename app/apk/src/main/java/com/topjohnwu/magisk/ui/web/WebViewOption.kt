@@ -44,11 +44,12 @@ import java.util.concurrent.CompletableFuture
 import kotlin.math.roundToInt
 
 class WebViewOption(
-    private val context: Context,
     private val id: String,
     private val path: String,
     private val view: WebView,
-    val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val shell: Shell,
+    private val context: Context = view.context
 ) : CoroutineScope by coroutineScope, DIAware {
 
     override val di by closestDI(context)
@@ -64,7 +65,6 @@ class WebViewOption(
             .build()
     }
 
-    private val shell get() = Shell.Builder.create().setFlags(Shell.FLAG_MOUNT_MASTER).build()
 
     private val isConnected = MutableStateFlow(false)
 
@@ -160,11 +160,8 @@ class WebViewOption(
                     emitData("stderr", s.let(JSONObject::quote), callbackFunc)
                 }
             }
-            val shell = shell
-            val future = shell.newJob().add(command).to(stdout, stderr).enqueue()
-            CompletableFuture.supplyAsync { future.get() }
+            CompletableFuture.supplyAsync { shell.newJob().add(command).to(stdout, stderr).enqueue().get() }
                 .thenAccept { result -> emitExitCode(result.code, callbackFunc) }
-                .whenComplete { _, _ -> runCatching { shell.close() } }
         }
 
         @JavascriptInterface

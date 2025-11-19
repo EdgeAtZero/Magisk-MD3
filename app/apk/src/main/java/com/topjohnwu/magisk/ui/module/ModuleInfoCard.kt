@@ -3,6 +3,9 @@ package com.topjohnwu.magisk.ui.module
 import android.text.format.Formatter
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Wysiwyg
@@ -14,32 +17,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.topjohnwu.magisk.ui.component.TextLabel
+import me.edgeatzero.compose.component.Card
+import me.edgeatzero.compose.component.Switch
 import me.edgeatzero.compose.theme.MaterialColors
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ModuleInfoCard(
     modifier: Modifier = Modifier,
     item: ModuleInfo,
+    isShowId: Boolean = false,
     onAction: () -> Unit,
     onUpdate: (enable: Boolean?, remove: Boolean?) -> Unit,
     onUpdateRequest: () -> Unit,
     onWeb: () -> Unit
 ) {
     val context = LocalContext.current
+    val isCardEnabled = item.isEnable && !item.isRemove && item.notice == null
+    val isSwitchEnabled = !item.isRemove
+    val interactionSource = remember { MutableInteractionSource() }
+    val textDecoration = TextDecoration.LineThrough.takeIf { item.isRemove }
 
     Card(
-        modifier = modifier,
-        enabled = item.isEnable && !item.isRemove && item.notice == null,
-        colors = CardDefaults.elevatedCardColors().let { it.copy(disabledContainerColor = it.containerColor) },
-        shape = MaterialTheme.shapes.medium,
-        onClick = { onUpdate(false, null) }
+        modifier = modifier.clickable(
+            enabled = isSwitchEnabled,
+            indication = LocalIndication.current,
+            interactionSource = interactionSource,
+            onClick = { onUpdate(!item.isEnable, null) }
+        ),
+        enabled = isCardEnabled,
+        interactionSource = interactionSource
     ) {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Crossfade(
                 modifier = Modifier.align(Alignment.Center),
                 targetState = when {
@@ -58,11 +71,20 @@ fun ModuleInfoCard(
                 }
             }
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                val textDecoration = TextDecoration.LineThrough.takeIf { item.isRemove }
-
                 Row(horizontalArrangement = Arrangement.SpaceAround) {
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        FlowRow(
+                            modifier = Modifier.padding(bottom = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            AnimatedVisibility(
+                                visible = isShowId,
+                                enter = fadeIn() + expandHorizontally(expandFrom = Alignment.End),
+                                exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.End)
+                            ) {
+                                TextLabel(text = item.id)
+                            }
                             val sizeText = remember(context, item.size) { Formatter.formatFileSize(context, item.size) }
                             TextLabel(text = sizeText)
                             if (item.isActionable) {
@@ -86,7 +108,6 @@ fun ModuleInfoCard(
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,
                                     style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
                                     textDecoration = targetState
                                 )
                                 Text(
@@ -109,8 +130,9 @@ fun ModuleInfoCard(
                     Switch(
                         modifier = Modifier.padding(start = 16.dp),
                         checked = item.isEnable,
-                        enabled = !item.isRemove,
-                        onCheckedChange = { onUpdate(!item.isEnable, null) }
+                        enabled = isSwitchEnabled,
+                        interactionSource = interactionSource,
+                        onCheckedChange = null
                     )
                 }
                 Crossfade(targetState = textDecoration) { targetState ->
@@ -131,12 +153,12 @@ fun ModuleInfoCard(
                     Row(modifier = Modifier.weight(1f)) {
                         if (item.notice == null) {
                             AnimatedVisibility(visible = item.isActionable) {
-                                FilledTonalIconButton(onClick = onAction) {
+                                FilledTonalIconButton(shapes = IconButtonDefaults.shapes(), onClick = onAction) {
                                     Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null)
                                 }
                             }
                             AnimatedVisibility(visible = item.isWeb) {
-                                FilledTonalIconButton(onClick = onWeb) {
+                                FilledTonalIconButton(shapes = IconButtonDefaults.shapes(), onClick = onWeb) {
                                     Icon(imageVector = Icons.AutoMirrored.Outlined.Wysiwyg, contentDescription = null)
                                 }
                             }
@@ -148,7 +170,7 @@ fun ModuleInfoCard(
                             enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
                             exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start)
                         ) {
-                            FilledTonalIconButton(onClick = onUpdateRequest) {
+                            FilledTonalIconButton(shapes = IconButtonDefaults.shapes(), onClick = onUpdateRequest) {
                                 Icon(imageVector = Icons.Filled.Download, contentDescription = null)
                             }
                         }

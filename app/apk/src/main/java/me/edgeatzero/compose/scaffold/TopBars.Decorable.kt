@@ -23,17 +23,14 @@ fun TopBars.Decorable(
             .dynamicBarColor()
             .statusBarsPadding()
     ) {
-        content(
-            this,
-            @Composable {
-                LargeTopAppBar(
-                    title = title,
-                    navigationIcon = navigationIcon,
-                    actions = actions,
-                    colors = p0,
-                    scrollBehavior = p1,
-                )
-            }
-        )
+        content(this) @Composable {
+            LargeTopAppBar(
+                title = title,
+                navigationIcon = navigationIcon,
+                actions = actions,
+                colors = p0,
+                scrollBehavior = p1,
+            )
+        }
     }
 }

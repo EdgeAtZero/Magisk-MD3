@@ -1,9 +1,12 @@
 package com.topjohnwu.magisk.ui.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,6 +24,7 @@ import me.edgeatzero.compose.component.Column
 import me.edgeatzero.compose.scaffold.Basic
 import me.edgeatzero.compose.scaffold.Scaffolds
 import me.edgeatzero.compose.scaffold.TopBars
+import me.edgeatzero.compose.util.plus
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -57,16 +61,18 @@ fun HomeScreen(
             }
         )
     ) { contentPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(all = 16.dp),
-            contentPadding = contentPadding,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Adaptive(400.dp),
+            contentPadding = contentPadding + 16.dp,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalItemSpacing = 16.dp
         ) {
-            StatusCard(onNavigateToInstall = onNavigateToInstall)
-            InfoCard()
+            item {
+                StatusCard(modifier = Modifier.animateItem(), onNavigateToInstall = onNavigateToInstall)
+            }
+            item {
+                InfoCard(modifier = Modifier.animateItem())
+            }
         }
     }
 }

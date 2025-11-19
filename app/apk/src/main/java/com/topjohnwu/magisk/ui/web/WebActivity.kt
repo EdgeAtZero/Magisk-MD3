@@ -1,5 +1,6 @@
 package com.topjohnwu.magisk.ui.web
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
@@ -15,11 +16,14 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.coroutineScope
-import androidx.lifecycle.findViewTreeLifecycleOwner
 import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.ui.module.ModuleInfo
+import com.topjohnwu.superuser.Shell
 
 class WebActivity : ComponentActivity() {
+
+    private var view: WebView? = null
+    private val shell by lazy { Shell.Builder.create().setFlags(Shell.FLAG_MOUNT_MASTER).build() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -43,26 +47,25 @@ class WebActivity : ComponentActivity() {
             return
         }
 
-        "Magisk | $name"
-            .let {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                    @Suppress("DEPRECATION")
-                    ActivityManager.TaskDescription(it)
-                } else {
-                    ActivityManager.TaskDescription.Builder().setLabel(it).build()
-                }
+        setTaskDescription(
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                @Suppress("DEPRECATION")
+                ActivityManager.TaskDescription(name)
+            } else {
+                ActivityManager.TaskDescription.Builder().setLabel(name).build()
             }
-            .let(::setTaskDescription)
+        )
 
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
 
-        with(WebView(this)) {
+        view = WebView(this).apply {
             with(settings) {
+                @SuppressLint("SetJavaScriptEnabled")
                 javaScriptEnabled = true
                 domStorageEnabled = true
                 allowFileAccess = false
             }
-            WebViewOption(context, id, path, this, lifecycle.coroutineScope).let {
+            WebViewOption(id, path, this, lifecycle.coroutineScope, shell).let {
                 ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
                     val inset = insets.getInsets(WindowInsetsCompat.Type.systemBars())
                     if (isInjectInsetsCss) {
@@ -79,9 +82,20 @@ class WebActivity : ComponentActivity() {
                 }
                 it.setup()
             }
-            loadUrl("https://mui.kernelsu.org/index.html")
+            loadUrl(INDEX_HTML)
             setContentView(this)
         }
+    }
+
+    override fun onDestroy() {
+        view?.apply {
+            stopLoading()
+            removeAllViews()
+            destroy()
+            view = null
+        }
+        shell.runCatching { close() }
+        super.onDestroy()
     }
 
     companion object {
@@ -90,6 +104,8 @@ class WebActivity : ComponentActivity() {
         const val EXTRA_NAME = "name"
         const val EXTRA_PATH = "path"
         const val EXTRA_IS_INJECT_INSETS_CSS = "is_inject_insets_css"
+
+        const val INDEX_HTML = "https://mui.kernelsu.org/index.html"
 
         fun launch(context: Context, info: ModuleInfo, isInjectInsetsCss: Boolean = true): Unit =
             launch(context, info.id, info.name, info.path.absolutePath, isInjectInsetsCss)

@@ -29,6 +29,7 @@ import com.topjohnwu.magisk.core.base.IActivityExtension
 import com.topjohnwu.magisk.core.download.DownloadEngine
 import com.topjohnwu.magisk.ui.MainActivity
 import com.topjohnwu.magisk.ui.web.WebActivity
+import me.edgeatzero.compose.component.Card
 import me.edgeatzero.compose.component.SearchBar
 import me.edgeatzero.compose.scaffold.Basic
 import me.edgeatzero.compose.scaffold.Scaffolds
@@ -57,7 +58,7 @@ fun ModuleScreen(
     var isNeedUpdateDialog by rememberSaveable { mutableStateOf<ModuleInfo?>(null) }
 
     if (isAdvancedMenuSheetVisible) {
-        ModuleAdvancedMenuBottomSheet(viewModel = viewModel) {
+        ModuleAdvancedMenu(viewModel = viewModel) {
             isAdvancedMenuSheetVisible = false
         }
     }
@@ -70,7 +71,6 @@ fun ModuleScreen(
 
                     override fun onActivityResult(result: Uri) {
                         onModuleInstall(result.toString())
-                        isNeedSelectFile = false
                         viewModel.refresh()
                     }
 
@@ -80,6 +80,7 @@ fun ModuleScreen(
 
                 }
             )
+            isNeedSelectFile = false
         }
     }
 
@@ -149,24 +150,22 @@ fun ModuleScreen(
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalItemSpacing = 16.dp
                         ) {
-                            item {
-                                if (viewModel.modules.isEmpty()) return@item
+                            if (!viewModel.isRefreshing) item {
                                 Card(
                                     modifier = Modifier.animateItem(),
-                                    border = CardDefaults.outlinedCardBorder(),
-                                    colors = CardDefaults.outlinedCardColors(),
                                     shape = MaterialTheme.shapes.medium,
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                                     onClick = { isNeedSelectFile = true }
                                 ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .align(Alignment.CenterHorizontally)
-                                            .padding(16.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(imageVector = Icons.Filled.SimCardDownload, contentDescription = null)
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(text = "从本地安装")
+                                    Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+                                        Row(
+                                            modifier = Modifier.align(Alignment.Center).padding(16.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(imageVector = Icons.Filled.SimCardDownload, contentDescription = null)
+                                            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                                            Text(text = "从本地安装")
+                                        }
                                     }
                                 }
                             }
@@ -174,6 +173,7 @@ fun ModuleScreen(
                                 ModuleInfoCard(
                                     modifier = Modifier.animateItem(),
                                     item = item,
+                                    isShowId = viewModel.sort == ModuleSort.ID,
                                     onAction = { onModuleAction(item.id, item.name) },
                                     onUpdate = { p0, p1 -> viewModel.updateModule(item, p0, p1) },
                                     onUpdateRequest = { isNeedUpdateDialog = item },

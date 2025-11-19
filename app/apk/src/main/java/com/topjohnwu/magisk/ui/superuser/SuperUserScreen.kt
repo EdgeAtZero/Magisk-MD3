@@ -46,7 +46,7 @@ fun SuperUserScreen(
     var isSearchBarShouldVisible by rememberSaveable { mutableStateOf(false) }
 
     if (isAdvancedMenuSheetVisible) {
-        SuperUserAdvancedMenuBottomSheet(viewModel = viewModel) {
+        SuperUserAdvancedMenu(viewModel = viewModel) {
             isAdvancedMenuSheetVisible = false
         }
     }
