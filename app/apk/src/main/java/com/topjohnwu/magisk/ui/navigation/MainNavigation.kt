@@ -222,6 +222,16 @@ private fun MainNavigationHost(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier
 ) {
+    fun navigateToHome() {
+        navController.navigate(Home) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     BoxWithConstraints {
         ProvideUIMode(if (maxWidth >= 840.dp) UIMode.TABLET else UIMode.MOBILE) {
             NavHost(
@@ -244,6 +254,7 @@ private fun MainNavigationHost(
                 }
                 composable<SuperUser>(deepLinks = listOf(SuperUser.deeplink), typeMap = SuperUser.typeMap) {
                     val viewModel by rememberViewModel<SuperUserViewModel>()
+                    BackHandler(onBack = ::navigateToHome)
                     SuperUserScreen(
                         rootContentPadding = contentPadding,
                         viewModel = viewModel
@@ -251,6 +262,7 @@ private fun MainNavigationHost(
                 }
                 composable<Module>(deepLinks = listOf(Module.deeplink), typeMap = Module.typeMap) {
                     val viewModel by rememberViewModel<ModuleViewModel>()
+                    BackHandler(onBack = ::navigateToHome)
                     ModuleScreen(
                         rootContentPadding = contentPadding,
                         viewModel = viewModel,
@@ -264,6 +276,7 @@ private fun MainNavigationHost(
                 }
                 composable<Settings>(deepLinks = listOf(Settings.deeplink), typeMap = Settings.typeMap) {
                     val viewModel by rememberViewModel<SettingsViewModel>()
+                    BackHandler(onBack = ::navigateToHome)
                     SettingsScreen(
                         rootContentPadding = contentPadding,
                         viewModel = viewModel

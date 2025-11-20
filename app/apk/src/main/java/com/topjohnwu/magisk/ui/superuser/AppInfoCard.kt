@@ -34,14 +34,11 @@ fun AppInfoCard(
     modifier: Modifier = Modifier,
     item: AppInfo,
     subtext: (AppInfo) -> String,
-    viewModel: SuperUserViewModel? = null,
-    isQuickSettingsEnable: Boolean = true,
-    isSelected: Boolean = false,
-    isShowLabel: Boolean = true,
-    onClick: (() -> Unit)? = null
+    viewModel: SuperUserViewModel? = null
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    Card {
+
+    Card(modifier = modifier) {
         ListExpandableItem(
             expanded = isExpanded,
             onClick = { isExpanded = !isExpanded },
@@ -63,35 +60,33 @@ fun AppInfoCard(
                             style = MaterialTheme.typography.labelMedium
                         )
                     }
-                    if (isShowLabel) {
-                        FlowRow(
-                            modifier = Modifier
-                                .padding(vertical = 4.dp)
-                                .animateContentSize(),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            if (item.isSystemApp) {
-                                TextLabel(text = "SYSTEM")
-                            }
-                            if (item.isSharedUID) {
-                                TextLabel(text = "SharedUID")
-                            }
-                            AnimatedVisibility(visible = item.isSuperUserActive) {
-                                AnimatedContent(targetState = item.isSuperUser) {
-                                    if (it) {
-                                        TextLabel(
-                                            text = "SU",
-                                            containerColor = MaterialTheme.colorScheme.errorContainer
-                                        )
-                                    } else {
-                                        TextLabel(text = "SU REJECT")
-                                    }
+                    FlowRow(
+                        modifier = Modifier
+                            .padding(vertical = 4.dp)
+                            .animateContentSize(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        if (item.isSystemApp) {
+                            TextLabel(text = "SYSTEM")
+                        }
+                        if (item.isSharedUID) {
+                            TextLabel(text = "SharedUID")
+                        }
+                        AnimatedVisibility(visible = item.isSuperUserActive) {
+                            AnimatedContent(targetState = item.isSuperUser) {
+                                if (it) {
+                                    TextLabel(
+                                        text = "SU",
+                                        containerColor = MaterialTheme.colorScheme.errorContainer
+                                    )
+                                } else {
+                                    TextLabel(text = "SU REJECT")
                                 }
                             }
-                            AnimatedVisibility(visible = item.isDeny) {
-                                TextLabel(text = "DENY")
-                            }
+                        }
+                        AnimatedVisibility(visible = item.isDeny) {
+                            TextLabel(text = "DENY")
                         }
                     }
                 }

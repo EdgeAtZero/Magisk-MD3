@@ -118,14 +118,10 @@ fun SuperUserScreen(
                         ) {
                             items(items = viewModel.apps, key = { item -> item.packageName }) { item ->
                                 AppInfoCard(
-                                    modifier = Modifier
-                                        .width(IntrinsicSize.Max)
-                                        .animateItem(),
+                                    modifier = Modifier.width(IntrinsicSize.Max).animateItem(),
                                     viewModel = viewModel,
                                     item = item,
-                                    subtext = { if (viewModel.sort == AppSort.UID) "UID: ${it.uid}" else it.packageName },
-                                    isQuickSettingsEnable = true,
-                                    isShowLabel = true
+                                    subtext = { if (viewModel.sort == AppSort.UID) "UID: ${it.uid}" else it.packageName }
                                 )
                             }
                         }

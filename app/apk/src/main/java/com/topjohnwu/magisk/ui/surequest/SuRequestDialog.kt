@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
@@ -23,6 +24,7 @@ import coil3.request.crossfade
 import com.topjohnwu.magisk.core.ktx.getLabel
 import com.topjohnwu.magisk.core.model.su.SuPolicy
 import me.edgeatzero.android.setupWindowBlurListener
+import me.edgeatzero.compose.component.SplicedCard
 import me.edgeatzero.compose.util.rememberToastAction
 
 private const val SHARED_ID_PREFIX = "[SharedUID] "
@@ -112,14 +114,31 @@ fun SuRequestDialog(modifier: Modifier = Modifier, viewModel: SuRequestViewModel
             (LocalView.current.parent as DialogWindowProvider).setupWindowBlurListener()
         },
         confirmButton = {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                TextButton(onClick = { viewModel.respond(SuPolicy.DENY) }) {
-                    Text(text = "拒绝" + if (seconds > 0) " (${seconds}s)" else "")
-                }
-                TextButton(enabled = isGrantEnabled, onClick = { viewModel.respond(SuPolicy.ALLOW) }) {
-                    Text(text = "允许")
-                }
-            }
+            SplicedCard(
+                modifier = Modifier.fillMaxWidth(),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                content = listOf(
+                    {
+                        TextButton(
+                            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
+                            enabled = isGrantEnabled,
+                            shape = RectangleShape,
+                            onClick = { viewModel.respond(SuPolicy.ALLOW) }
+                        ) {
+                            Text(text = "允许")
+                        }
+                    },
+                    {
+                        TextButton(
+                            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
+                            shape = RectangleShape,
+                            onClick = { viewModel.respond(SuPolicy.DENY) }
+                        ) {
+                            Text(text = "拒绝" + if (seconds > 0) " (${seconds}s)" else "")
+                        }
+                    }
+                )
+            )
         },
         onDismissRequest = { viewModel.respond(SuPolicy.DENY) }
     )

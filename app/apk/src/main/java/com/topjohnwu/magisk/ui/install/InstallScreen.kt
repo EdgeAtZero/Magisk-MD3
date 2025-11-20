@@ -119,7 +119,7 @@ fun InstallScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalItemSpacing = 16.dp
         ) {
-            if (BuildConfig.DEBUG || !Info.isEmulator && (!Info.isSAR || Info.isFDE || !Info.ramdisk)) {
+            if (!Info.isEmulator && (!Info.isSAR || Info.isFDE || !Info.ramdisk)) {
                 item {
                     InstallOptionsCard(
                         modifier = Modifier.animateItem().fillMaxWidth(),

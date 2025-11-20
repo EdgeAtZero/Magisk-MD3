@@ -116,7 +116,12 @@ fun ListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             decoratedLeadingContent?.let {
-                Box(modifier = Modifier.padding(end = 16.dp)) {
+                Box(
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 56.dp, minHeight = 56.dp)
+                        .padding(end = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
                     it()
                 }
             }
@@ -125,7 +130,12 @@ fun ListItem(
                 decoratedSupportingContent?.invoke()
             }
             decoratedTrailingContent?.let {
-                Box(modifier = Modifier.padding(start = 16.dp)) {
+                Box(
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 56.dp, minHeight = 56.dp)
+                        .padding(start = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
                     it()
                 }
             }

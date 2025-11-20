@@ -116,12 +116,18 @@ fun EnvFixDialog(
                             ) {
                                 Text(text = "确定")
                             }
+                        },
+                        {
+                            TextButton(
+                                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
+                                shape = RectangleShape,
+                                onClick = onDismissRequest
+                            ) {
+                                Text(text = "取消")
+                            }
                         }
                     )
                 )
-            },
-            dismissButton = {
-                TextButton(onClick = onDismissRequest) { Text(text = "取消") }
             },
             onDismissRequest = onDismissRequest
         )

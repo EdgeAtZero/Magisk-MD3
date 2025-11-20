@@ -1,24 +1,22 @@
 package com.topjohnwu.magisk.ui.module
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SimCardDownload
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
 import me.edgeatzero.android.setupWindowBlurListener
+import me.edgeatzero.compose.component.SplicedCard
 
 @Composable
 fun ModuleUpdateDialog(
@@ -45,13 +43,39 @@ fun ModuleUpdateDialog(
             (LocalView.current.parent as DialogWindowProvider).setupWindowBlurListener()
         },
         confirmButton = {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                Box(modifier = Modifier.weight(1f)) {
-                    TextButton(onClick = onDismissRequest) { Text(text = "关闭") }
-                }
-                TextButton(onClick = { onDismissRequest(); onDownload(false) }) { Text(text = "下载") }
-                TextButton(onClick = { onDismissRequest(); onDownload(true) }) { Text(text = "安装") }
-            }
+            SplicedCard(
+                modifier = Modifier.fillMaxWidth(),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                content = listOf(
+                    {
+                        TextButton(
+                            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
+                            shape = RectangleShape,
+                            onClick = { onDismissRequest(); onDownload(true) }
+                        ) {
+                            Text(text = "安装")
+                        }
+                    },
+                    {
+                        TextButton(
+                            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
+                            shape = RectangleShape,
+                            onClick = { onDismissRequest(); onDownload(false) }
+                        ) {
+                            Text(text = "下载")
+                        }
+                    },
+                    {
+                        TextButton(
+                            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
+                            shape = RectangleShape,
+                            onClick = onDismissRequest
+                        ) {
+                            Text(text = "关闭")
+                        }
+                    }
+                )
+            )
         },
         onDismissRequest = onDismissRequest
     )
