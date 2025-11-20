@@ -52,7 +52,7 @@ fun ModuleInfoCard(
         enabled = isCardEnabled,
         interactionSource = interactionSource
     ) {
-        Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Box(modifier = Modifier.padding(16.dp)) {
             Crossfade(
                 modifier = Modifier.align(Alignment.Center),
                 targetState = when {

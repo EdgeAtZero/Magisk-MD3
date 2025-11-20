@@ -60,10 +60,7 @@ fun SuperUserAdvancedMenu(
                     ListItem(
                         headlineContent = { Text(text = "筛选应用") },
                         overlineContent = {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 AppFilter.entries.forEach { item ->
                                     FilterChip(
                                         selected = viewModel.filter == item,
@@ -83,10 +80,7 @@ fun SuperUserAdvancedMenu(
                     ListItem(
                         headlineContent = { Text(text = "排序") },
                         overlineContent = {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 AppSorts.forEach { item ->
                                     FilterChip(
                                         selected = viewModel.sort == item,
@@ -106,10 +100,7 @@ fun SuperUserAdvancedMenu(
                     ListItem(
                         headlineContent = { Text(text = "优先") },
                         overlineContent = {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 AppPriorities.forEach { item ->
                                     val isSelected = viewModel.priorities.contains(item)
 

@@ -3,28 +3,31 @@ package com.topjohnwu.magisk.ui.superuser
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.topjohnwu.magisk.ui.component.TextLabel
-import me.edgeatzero.compose.theme.MaterialColors
+import me.edgeatzero.compose.component.Card
+import me.edgeatzero.compose.component.ListExpandableItem
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @ExperimentalMaterial3Api
 @Composable
 fun AppInfoCard(
@@ -37,100 +40,111 @@ fun AppInfoCard(
     isShowLabel: Boolean = true,
     onClick: (() -> Unit)? = null
 ) {
-    Box(
-        modifier = modifier
-            .let { if (onClick != null) it.clickable(onClick = onClick, role = Role.Button) else it }
-            .background(if (isSelected) MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp) else Color.Unspecified)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 72.dp)
-                .padding(all = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(item.packageInfo)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = null,
-            )
-            Spacer(Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-                if (item.label == item.packageName) {
-                    Text(
-                        text = item.label,
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 2,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                } else {
-                    Text(
-                        text = item.label,
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = subtext(item),
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 2,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
-                if (isShowLabel) {
-                    Row(
-                        modifier = Modifier
-                            .padding(vertical = 4.dp)
-                            .animateContentSize(),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        if (item.isSystemApp) {
-                            TextLabel(
-                                text = "SYSTEM",
-                                containerColor = MaterialColors.Amber[200],
-                                contentColor = MaterialColors.Amber[900]
-                            )
-                        }
-                        if (item.isSharedUID) {
-                            TextLabel(
-                                text = "SharedUID",
-                                containerColor = MaterialColors.Purple[100],
-                                contentColor = MaterialColors.Purple[900]
-                            )
-                        }
-                        AnimatedVisibility(visible = item.isSuperUserActive) {
-                            AnimatedContent(targetState = item.isSuperUser) {
-                                if (it) {
-                                    TextLabel(
-                                        text = "SU",
-                                        containerColor = MaterialColors.Red[600],
-                                        contentColor = MaterialColors.Red[50]
-                                    )
-                                } else {
-                                    TextLabel(
-                                        text = "SU REJECT",
-                                        containerColor = MaterialColors.Green[500],
-                                        contentColor = MaterialColors.Green[50]
-                                    )
+    var isExpanded by remember { mutableStateOf(false) }
+    Card {
+        ListExpandableItem(
+            expanded = isExpanded,
+            onClick = { isExpanded = !isExpanded },
+            headlineContent = {
+                Text(
+                    text = item.label,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
+            supportingContent = {
+                Column {
+                    if (item.label != item.packageName) {
+                        Text(
+                            text = subtext(item),
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 2,
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                    if (isShowLabel) {
+                        FlowRow(
+                            modifier = Modifier
+                                .padding(vertical = 4.dp)
+                                .animateContentSize(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            if (item.isSystemApp) {
+                                TextLabel(text = "SYSTEM")
+                            }
+                            if (item.isSharedUID) {
+                                TextLabel(text = "SharedUID")
+                            }
+                            AnimatedVisibility(visible = item.isSuperUserActive) {
+                                AnimatedContent(targetState = item.isSuperUser) {
+                                    if (it) {
+                                        TextLabel(
+                                            text = "SU",
+                                            containerColor = MaterialTheme.colorScheme.errorContainer
+                                        )
+                                    } else {
+                                        TextLabel(text = "SU REJECT")
+                                    }
                                 }
                             }
-                        }
-                        AnimatedVisibility(visible = item.isDeny) {
-                            TextLabel(
-                                text = "DENY",
-                                containerColor = MaterialColors.LightBlue[100],
-                                contentColor = MaterialColors.LightBlue[900]
-                            )
+                            AnimatedVisibility(visible = item.isDeny) {
+                                TextLabel(text = "DENY")
+                            }
                         }
                     }
                 }
+            },
+            overlineContent = {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    if (item.isDenyAvailable) FilterChip(
+                        selected = item.isDeny,
+                        onClick = { viewModel?.updateDenyPolicy(item, enable = !item.isDeny) },
+                        label = { Text(text = "排除列表") },
+                        leadingIcon = { Icon(imageVector = Icons.Filled.SearchOff, contentDescription = null) }
+                    )
+                    FilterChip(
+                        selected = item.isSuperUser,
+                        onClick = { viewModel?.updateSuPolicy(item, enable = !item.isSuperUser) },
+                        label = { Text(text = "超级用户") },
+                        leadingIcon = { Icon(imageVector = Icons.Filled.AdminPanelSettings, contentDescription = null) }
+                    )
+                    AnimatedVisibility(visible = item.isSuperUserActive) {
+                        FilterChip(
+                            selected = item.isLogging,
+                            onClick = { viewModel?.updateSuPolicy(item, logging = !item.isLogging) },
+                            label = { Text(text = "日志") },
+                            leadingIcon = { Icon(imageVector = Icons.Filled.BugReport, contentDescription = null) }
+                        )
+                    }
+                    AnimatedVisibility(visible = item.isSuperUserActive) {
+                        FilterChip(
+                            selected = item.isNotify,
+                            onClick = { viewModel?.updateSuPolicy(item, notification = !item.isNotify) },
+                            label = { Text(text = "通知") },
+                            leadingIcon = { Icon(imageVector = Icons.Filled.Notifications, contentDescription = null) }
+                        )
+                    }
+                    AnimatedVisibility(visible = item.isSuperUserActive) {
+                        FilterChip(
+                            selected = true,
+                            onClick = { viewModel?.updateSuPolicy(item) },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = MaterialTheme.colorScheme.errorContainer),
+                            label = { Text(text = "撤销超级用户") }
+                        )
+                    }
+                }
+            },
+            leadingContent = {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(item.packageInfo)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null,
+                )
             }
-            if (isQuickSettingsEnable && viewModel != null) {
-                AppInfoMenu(item = item, viewModel = viewModel)
-            }
-        }
+        )
     }
 }

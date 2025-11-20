@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,22 +63,27 @@ fun SplicedCard(
 
         // The container for setting items.
         Column(
-            modifier = Modifier
-                // Clip the whole column to ensure content stays within the rounded bounds.
-                .clip(cornerShape),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+            // Clip the whole column to ensure content stays within the rounded bounds.
+            modifier = Modifier.clip(cornerShape),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             content.forEachIndexed { index, item ->
                 // Determine the shape based on the pkg's position.
-                val shape = when {
-                    content.size == 1 -> cornerShape
-                    index == 0 -> topShape
-                    index == content.size - 1 -> bottomShape
-                    else -> connectionShape
+                val shape by remember {
+                    derivedStateOf {
+                        when {
+                            content.size == 1 -> cornerShape
+                            index == 0 -> topShape
+                            index == content.size - 1 -> bottomShape
+                            else -> connectionShape
+                        }
+                    }
                 }
 
-                // Apply the background and the correct shape to the pkg.
-                Box(modifier = Modifier.clip(shape).background(color = containerColor)) {
+                Box(
+                    // Apply the background and the correct shape to the pkg.
+                    modifier = Modifier.clip(shape).background(color = containerColor)
+                ) {
                     item()
                 }
             }

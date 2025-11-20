@@ -38,6 +38,7 @@ class AppInfo(
     val isNotify by derivedStateOf { this.suPolicy?.notification == true }
     val isLogging by derivedStateOf { this.suPolicy?.logging == true }
     val isDeny by derivedStateOf { processes.any { it.isEnabled } }
+    val isDenyAvailable by derivedStateOf { processes.isNotEmpty() }
 
     fun copy(
         packageManager: PackageManager = this.packageManager,

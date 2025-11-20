@@ -21,8 +21,8 @@ fun ListItem(
     modifier: Modifier = Modifier,
     colors: ListItemColors = ListItemDefaults.colors(),
     headlineContent: @Composable () -> Unit,
-    overlineContent: @Composable (() -> Unit)? = null,
     supportingContent: @Composable (() -> Unit)? = null,
+    overlineContent: @Composable (() -> Unit)? = null,
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null
 ) {
@@ -31,8 +31,8 @@ fun ListItem(
         colors = colors,
         onClick = null,
         headlineContent = headlineContent,
-        overlineContent = overlineContent,
         supportingContent = supportingContent,
+        overlineContent = overlineContent,
         leadingContent = leadingContent,
         trailingContent = trailingContent
     )
@@ -47,8 +47,8 @@ fun ListItem(
     indication: Indication? = onClick?.let { LocalIndication.current },
     interactionSource: MutableInteractionSource? = onClick?.let { remember { MutableInteractionSource() } },
     headlineContent: @Composable () -> Unit,
-    overlineContent: @Composable (() -> Unit)? = null,
     supportingContent: @Composable (() -> Unit)? = null,
+    overlineContent: @Composable (() -> Unit)? = null,
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null
 ) {

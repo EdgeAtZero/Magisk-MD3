@@ -18,8 +18,8 @@ fun ListSelectableItem(
     onSelectedChanged: (Boolean) -> Unit = {},
     colors: ListItemColors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
     headlineContent: @Composable () -> Unit,
-    overlineContent: @Composable (() -> Unit)? = null,
     supportingContent: @Composable (() -> Unit)? = null,
+    overlineContent: @Composable (() -> Unit)? = null,
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit) = {
         Radio(
@@ -37,8 +37,8 @@ fun ListSelectableItem(
         interactionSource = interactionSource,
         onClick = { onSelectedChanged(!selected) },
         headlineContent = headlineContent,
-        overlineContent = overlineContent,
         supportingContent = supportingContent,
+        overlineContent = overlineContent,
         leadingContent = leadingContent,
         trailingContent = trailingContent,
         colors = colors

@@ -50,10 +50,7 @@ fun ModuleAdvancedMenu(
                     ListItem(
                         headlineContent = { Text(text = "排序") },
                         overlineContent = {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 ModuleSorts.forEach { item ->
                                     FilterChip(
                                         selected = viewModel.sort == item,
@@ -72,10 +69,7 @@ fun ModuleAdvancedMenu(
                     ListItem(
                         headlineContent = { Text(text = "优先") },
                         overlineContent = {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 ModulePriorities.forEach { item ->
                                     val isSelected = viewModel.priorities.contains(item)
 
